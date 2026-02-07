@@ -1,0 +1,434 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Theme with Spacing System */
+@layer base {
+  :root {
+    /* Spacing Scale - Based on 8px grid */
+    --spacing-0: 0px;
+  --spacing-1: 0.25rem;    /* 4px */
+  --spacing-2: 0.5rem;     /* 8px */
+  --spacing-3: 0.75rem;    /* 12px */
+  --spacing-4: 1rem;       /* 16px */
+  --spacing-5: 1.25rem;    /* 20px */
+  --spacing-6: 1.5rem;     /* 24px */
+  --spacing-8: 2rem;       /* 32px */
+  --spacing-10: 2.5rem;    /* 40px */
+  --spacing-12: 3rem;      /* 48px */
+  --spacing-16: 4rem;      /* 64px */
+  --spacing-20: 5rem;      /* 80px */
+  --spacing-24: 6rem;      /* 96px */
+  --spacing-32: 8rem;      /* 128px */
+  
+  /* Section Spacing */
+  --spacing-section-sm: 3rem;     /* 48px */
+  --spacing-section-md: 4rem;     /* 64px */
+  --spacing-section-lg: 6rem;     /* 96px */
+  --spacing-section-xl: 8rem;     /* 128px */
+  
+  /* Container Padding */
+  --spacing-container-sm: 1rem;   /* 16px */
+  --spacing-container-md: 1.5rem; /* 24px */
+  --spacing-container-lg: 2rem;   /* 32px */
+  
+  /* Component Spacing */
+  --spacing-card: 1.5rem;         /* 24px */
+  --spacing-card-sm: 1rem;        /* 16px */
+  --spacing-card-lg: 2rem;        /* 32px */
+  
+  /* Gap Sizes */
+  --gap-xs: 0.5rem;     /* 8px */
+  --gap-sm: 0.75rem;    /* 12px */
+  --gap-md: 1rem;       /* 16px */
+  --gap-lg: 1.5rem;     /* 24px */
+  --gap-xl: 2rem;       /* 32px */
+    --gap-2xl: 3rem;      /* 48px */
+    
+    /* Colors (keeping existing) */
+    --color-primary: #00A86B;
+    --color-primary-dark: #007A50;
+    --color-primary-light: #E8F8F1;
+    
+    --color-secondary: #FF6B35;
+    --color-secondary-dark: #D45A2C;
+    --color-secondary-light: #FFE8E0;
+    
+    /* ... rest of colors ... */
+  }
+}
+
+/* =========================================== */
+/* SPACING UTILITIES */
+/* =========================================== */
+
+/* Container Spacing */
+.container-padded {
+  padding-left: var(--spacing-container-md);
+  padding-right: var(--spacing-container-md);
+}
+
+@media (min-width: 640px) {
+  .container-padded {
+    padding-left: var(--spacing-container-lg);
+    padding-right: var(--spacing-container-lg);
+  }
+}
+
+/* Section Spacing */
+.section-spacing {
+  padding-top: var(--spacing-section-md);
+  padding-bottom: var(--spacing-section-md);
+}
+
+.section-spacing-sm {
+  padding-top: var(--spacing-section-sm);
+  padding-bottom: var(--spacing-section-sm);
+}
+
+.section-spacing-lg {
+  padding-top: var(--spacing-section-lg);
+  padding-bottom: var(--spacing-section-lg);
+}
+
+.section-spacing-xl {
+  padding-top: var(--spacing-section-xl);
+  padding-bottom: var(--spacing-section-xl);
+}
+
+/* Section Top/Bottom Only */
+.section-top {
+  padding-top: var(--spacing-section-md);
+}
+
+.section-bottom {
+  padding-bottom: var(--spacing-section-md);
+}
+
+/* Card Spacing */
+.card-spacing {
+  padding: var(--spacing-card);
+}
+
+.card-spacing-sm {
+  padding: var(--spacing-card-sm);
+}
+
+.card-spacing-lg {
+  padding: var(--spacing-card-lg);
+}
+
+/* Grid Gaps */
+.grid-gap-sm {
+  gap: var(--gap-sm);
+}
+
+.grid-gap-md {
+  gap: var(--gap-md);
+}
+
+.grid-gap-lg {
+  gap: var(--gap-lg);
+}
+
+.grid-gap-xl {
+  gap: var(--gap-xl);
+}
+
+/* Stack Layout (Vertical spacing) */
+.stack-sm > * + * {
+  margin-top: var(--spacing-3);
+}
+
+.stack-md > * + * {
+  margin-top: var(--spacing-6);
+}
+
+.stack-lg > * + * {
+  margin-top: var(--spacing-8);
+}
+
+/* Cluster Layout (Horizontal spacing) */
+.cluster-sm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.cluster-md {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+}
+
+.cluster-lg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-6);
+}
+
+/* Box Spacing (All around) */
+.box-sm {
+  padding: var(--spacing-3);
+}
+
+.box-md {
+  padding: var(--spacing-6);
+}
+
+.box-lg {
+  padding: var(--spacing-8);
+}
+
+/* Inline Spacing */
+.inline-sm {
+  display: inline-flex;
+  gap: var(--spacing-2);
+}
+
+.inline-md {
+  display: inline-flex;
+  gap: var(--spacing-4);
+}
+
+.inline-lg {
+  display: inline-flex;
+  gap: var(--spacing-6);
+}
+
+/* =========================================== */
+/* COMPONENT SPECIFIC SPACING */
+/* =========================================== */
+
+/* Header */
+.header-height {
+  height: 4rem; /* 64px */
+}
+
+.header-padding {
+  padding-left: var(--spacing-container-md);
+  padding-right: var(--spacing-container-md);
+}
+
+/* Hero Section */
+.hero-padding {
+  padding-top: var(--spacing-section-xl);
+  padding-bottom: var(--spacing-section-lg);
+}
+
+/* Feature Cards */
+.feature-card {
+  padding: var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+}
+
+.feature-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Form Spacing */
+.form-stack > * + * {
+  margin-top: var(--spacing-6);
+}
+
+.form-field {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Button Spacing */
+.btn-spacing {
+  padding: var(--spacing-3) var(--spacing-6);
+}
+
+.btn-spacing-sm {
+  padding: var(--spacing-2) var(--spacing-4);
+}
+
+.btn-spacing-lg {
+  padding: var(--spacing-4) var(--spacing-8);
+}
+
+/* Table Spacing */
+.table-cell {
+  padding: var(--spacing-3) var(--spacing-4);
+}
+
+.table-cell-sm {
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+/* Modal/Overlay Spacing */
+.modal-padding {
+  padding: var(--spacing-6);
+}
+
+.modal-padding-lg {
+  padding: var(--spacing-8);
+}
+
+/* List Spacing */
+.list-spacing > li {
+  margin-bottom: var(--spacing-3);
+}
+
+.list-spacing > li:last-child {
+  margin-bottom: 0;
+}
+
+/* =========================================== */
+/* RESPONSIVE SPACING */
+/* =========================================== */
+
+@media (min-width: 640px) {
+  .sm\:section-spacing {
+    padding-top: var(--spacing-section-lg);
+    padding-bottom: var(--spacing-section-lg);
+  }
+  
+  .sm\:grid-gap-lg {
+    gap: var(--gap-lg);
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:section-spacing {
+    padding-top: var(--spacing-section-lg);
+    padding-bottom: var(--spacing-section-lg);
+  }
+  
+  .md\:grid-gap-xl {
+    gap: var(--gap-xl);
+  }
+  
+  .md\:stack-md > * + * {
+    margin-top: var(--spacing-8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:section-spacing {
+    padding-top: var(--spacing-section-xl);
+    padding-bottom: var(--spacing-section-xl);
+  }
+  
+  .lg\:grid-gap-2xl {
+    gap: var(--gap-2xl);
+  }
+}
+
+/* =========================================== */
+/* MARGIN UTILITIES */
+/* =========================================== */
+
+/* Auto Margins */
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.my-auto {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* Margin Reset */
+.m-0 { margin: 0; }
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.ml-0 { margin-left: 0; }
+.mr-0 { margin-right: 0; }
+.mx-0 { margin-left: 0; margin-right: 0; }
+.my-0 { margin-top: 0; margin-bottom: 0; }
+
+/* Small Margins */
+.m-2 { margin: var(--spacing-2); }
+.mt-2 { margin-top: var(--spacing-2); }
+.mb-2 { margin-bottom: var(--spacing-2); }
+.ml-2 { margin-left: var(--spacing-2); }
+.mr-2 { margin-right: var(--spacing-2); }
+
+/* Medium Margins */
+.m-4 { margin: var(--spacing-4); }
+.mt-4 { margin-top: var(--spacing-4); }
+.mb-4 { margin-bottom: var(--spacing-4); }
+.ml-4 { margin-left: var(--spacing-4); }
+.mr-4 { margin-right: var(--spacing-4); }
+
+/* Large Margins */
+.m-6 { margin: var(--spacing-6); }
+.mt-6 { margin-top: var(--spacing-6); }
+.mb-6 { margin-bottom: var(--spacing-6); }
+.ml-6 { margin-left: var(--spacing-6); }
+.mr-6 { margin-right: var(--spacing-6); }
+
+/* Extra Large Margins */
+.m-8 { margin: var(--spacing-8); }
+.mt-8 { margin-top: var(--spacing-8); }
+.mb-8 { margin-bottom: var(--spacing-8); }
+.ml-8 { margin-left: var(--spacing-8); }
+.mr-8 { margin-right: var(--spacing-8); }
+
+/* Negative Margins */
+.-m-2 { margin: calc(var(--spacing-2) * -1); }
+.-mt-2 { margin-top: calc(var(--spacing-2) * -1); }
+.-mb-2 { margin-bottom: calc(var(--spacing-2) * -1); }
+
+/* =========================================== */
+/* PADDING UTILITIES */
+/* =========================================== */
+
+/* Padding Reset */
+.p-0 { padding: 0; }
+.pt-0 { padding-top: 0; }
+.pb-0 { padding-bottom: 0; }
+.pl-0 { padding-left: 0; }
+.pr-0 { padding-right: 0; }
+.px-0 { padding-left: 0; padding-right: 0; }
+.py-0 { padding-top: 0; padding-bottom: 0; }
+
+/* Small Padding */
+.p-2 { padding: var(--spacing-2); }
+.pt-2 { padding-top: var(--spacing-2); }
+.pb-2 { padding-bottom: var(--spacing-2); }
+.pl-2 { padding-left: var(--spacing-2); }
+.pr-2 { padding-right: var(--spacing-2); }
+
+/* Medium Padding */
+.p-4 { padding: var(--spacing-4); }
+.pt-4 { padding-top: var(--spacing-4); }
+.pb-4 { padding-bottom: var(--spacing-4); }
+.pl-4 { padding-left: var(--spacing-4); }
+.pr-4 { padding-right: var(--spacing-4); }
+
+/* Large Padding */
+.p-6 { padding: var(--spacing-6); }
+.pt-6 { padding-top: var(--spacing-6); }
+.pb-6 { padding-bottom: var(--spacing-6); }
+.pl-6 { padding-left: var(--spacing-6); }
+.pr-6 { padding-right: var(--spacing-6); }
+
+/* Extra Large Padding */
+.p-8 { padding: var(--spacing-8); }
+.pt-8 { padding-top: var(--spacing-8); }
+.pb-8 { padding-bottom: var(--spacing-8); }
+.pl-8 { padding-left: var(--spacing-8); }
+.pr-8 { padding-right: var(--spacing-8); }
+
+/* =========================================== */
+/* GAP UTILITIES */
+/* =========================================== */
+
+.gap-2 { gap: var(--spacing-2); }
+.gap-4 { gap: var(--spacing-4); }
+.gap-6 { gap: var(--spacing-6); }
+.gap-8 { gap: var(--spacing-8); }
+
+.row-gap-2 { row-gap: var(--spacing-2); }
+.row-gap-4 { row-gap: var(--spacing-4); }
+.row-gap-6 { row-gap: var(--spacing-6); }
+
+.column-gap-2 { column-gap: var(--spacing-2); }
+.column-gap-4 { column-gap: var(--spacing-4); }
+.column-gap-6 { column-gap: var(--spacing-6); }
+
+/* ... rest of existing CSS ... */

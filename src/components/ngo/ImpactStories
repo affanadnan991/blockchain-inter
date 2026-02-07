@@ -1,0 +1,118 @@
+import { FaQuoteLeft, FaUserCircle, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa'
+
+const ImpactStories = ({ ngo }) => {
+  const stories = [
+    {
+      id: 1,
+      quote: "Thanks to the emergency ambulance service, my father received immediate medical attention during his heart attack. They saved his life.",
+      author: "Ahmed Raza",
+      location: "Karachi",
+      date: "March 2024",
+      category: "Healthcare"
+    },
+    {
+      id: 2,
+      quote: "As an orphan, I received education, shelter, and love from the foundation. Today, I'm a software engineer giving back to society.",
+      author: "Sara Khan",
+      location: "Lahore",
+      date: "February 2024",
+      category: "Education"
+    },
+    {
+      id: 3,
+      quote: "During the floods, they provided food, shelter, and medical care to our entire village. They were the first and last to help.",
+      author: "Rashid Ali",
+      location: "Sindh",
+      date: "January 2024",
+      category: "Emergency Relief"
+    }
+  ]
+
+  return (
+    <div className="space-y-8">
+      {/* Impact Metrics */}
+      <div className="card card-spacing">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Impact Metrics</h3>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="text-center">
+            <div className="text-4xl font-bold text-primary mb-2">45M+</div>
+            <div className="text-gray-600">Lives Impacted</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-primary mb-2">70+</div>
+            <div className="text-gray-600">Years of Service</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-primary mb-2">1800+</div>
+            <div className="text-gray-600">Ambulances</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-primary mb-2">17</div>
+            <div className="text-gray-600">Orphanages</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Success Stories */}
+      <div className="card card-spacing">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Success Stories</h3>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {stories.map((story) => (
+            <div key={story.id} className="p-6 bg-gray-50 rounded-xl">
+              <FaQuoteLeft className="text-primary text-2xl mb-4" />
+              <p className="text-gray-600 italic mb-6">"{story.quote}"</p>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                  <FaUserCircle className="text-primary" />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{story.author}</div>
+                  <div className="text-sm text-gray-600">{story.category}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <FaMapMarkerAlt />
+                  <span>{story.location}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <FaCalendarAlt />
+                  <span>{story.date}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Annual Report */}
+      <div className="card card-spacing">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Annual Impact Report 2023</h3>
+            <p className="text-gray-600 mb-4">
+              Download the complete annual report detailing our achievements, financials, and future plans.
+            </p>
+            <div className="flex gap-4">
+              <button className="btn btn-primary">
+                Download PDF
+              </button>
+              <button className="btn btn-outline">
+                View Online
+              </button>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-6xl font-bold text-primary">2023</div>
+            <div className="text-gray-600">Annual Report</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default ImpactStories
