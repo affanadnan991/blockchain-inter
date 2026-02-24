@@ -67,7 +67,7 @@ export default function AdminPage() {
       </div>
     )
   }
-
+    
   if (!isAdmin) {
     return (
       <div className="section-spacing">

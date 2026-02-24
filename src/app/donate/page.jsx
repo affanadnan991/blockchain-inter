@@ -1,84 +1,85 @@
-'use client'
+import DonateForm from '../../components/donate/DonateForm'
 
-import { useState } from 'react'
-import DonationForm from '@/components/donation/DonationForm'
-import TokenSelector from '@/components/donation/TokenSelector'
-import NGOSelector from '@/components/donation/NGOSelector'
-import DonationSummary from '@/components/donation/DonationSummary'
+// Mock NGO data - Replace with actual data from contract
+const mockNGOs = [
+  {
+    id: '1',
+    name: 'Clean Water Initiative',
+    description: 'Providing clean water to communities in need',
+    category: 'Water & Sanitation',
+    logo: '/images/ngos/clean-water.jpg',
+    address: '0x1234567890123456789012345678901234567890',
+    trustScore: 98,
+    donorCount: 1250,
+  },
+  {
+    id: '2',
+    name: 'Education for All',
+    description: 'Building schools and providing education resources',
+    category: 'Education',
+    logo: '/images/ngos/education.jpg',
+    address: '0x2345678901234567890123456789012345678901',
+    trustScore: 95,
+    donorCount: 850,
+  },
+  {
+    id: '3',
+    name: 'Medical Relief Foundation',
+    description: 'Emergency medical care and support',
+    category: 'Healthcare',
+    logo: '/images/ngos/medical.jpg',
+    address: '0x3456789012345678901234567890123456789012',
+    trustScore: 97,
+    donorCount: 2100,
+  },
+]
 
 export default function DonatePage() {
-  const [selectedToken, setSelectedToken] = useState('MATIC')
-  const [selectedNGO, setSelectedNGO] = useState(null)
-  const [amount, setAmount] = useState('')
-
   return (
-    <div className="section-spacing">
-      <div className="container-padded">
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4">
+      <div className="container mx-auto max-w-7xl">
         {/* Page Header */}
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Make a{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">
-              Difference
-            </span>
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Make a <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">Difference</span>
           </h1>
-          <p className="text-xl text-gray-600">
-            Your donation can change lives. Every contribution makes an impact.
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Your donation is tracked on the blockchain - 100% transparent, 100% secure
           </p>
         </div>
 
-        {/* Donation Form Layout */}
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Panel - Form (2/3 width) */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* NGO Selection Card */}
-              <div className="card card-spacing">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Select NGO</h2>
-                  <p className="text-gray-600 mt-2">Choose where you want to make an impact</p>
-                </div>
-                <NGOSelector 
-                  selectedNGO={selectedNGO}
-                  onSelect={setSelectedNGO}
-                />
-              </div>
+        {/* Donation Form */}
+        <DonateForm ngos={mockNGOs} platformFeePercent={2} />
 
-              {/* Donation Details Card */}
-              <div className="card card-spacing">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Donation Details</h2>
-                  <p className="text-gray-600 mt-2">Enter your donation amount and token</p>
-                </div>
-                
-                <div className="space-y-8">
-                  <TokenSelector
-                    selectedToken={selectedToken}
-                    onSelect={setSelectedToken}
-                  />
-                  
-                  <div className="pt-6 border-t border-gray-100">
-                    <DonationForm
-                      amount={amount}
-                      setAmount={setAmount}
-                      selectedToken={selectedToken}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Panel - Summary (1/3 width) */}
-            <div className="lg:col-span-1">
-              <DonationSummary
-                amount={amount}
-                token={selectedToken}
-                ngo={selectedNGO}
-              />
-            </div>
-          </div>
+        {/* Trust Indicators */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <TrustBadge
+            icon="🔒"
+            title="Blockchain Secured"
+            description="Every transaction verified on-chain"
+          />
+          <TrustBadge
+            icon="👁️"
+            title="100% Transparent"
+            description="Track every penny in real-time"
+          />
+          <TrustBadge
+            icon="✅"
+            title="Verified NGOs"
+            description="Only approved organizations"
+          />
         </div>
       </div>
+    </main>
+  )
+}
+
+function TrustBadge({ icon, title, description }) {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl p-6 text-center border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+      <div className="text-4xl mb-3">{icon}</div>
+      <h3 className="font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
     </div>
   )
 }

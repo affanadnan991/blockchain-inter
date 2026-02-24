@@ -64,7 +64,7 @@ const Features = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="card card-spacing hover:shadow-xl transition-all duration-300 h-full flex flex-col"
+                className="card card-spacing hover:shadow-xl transition-all duration-300 h-full flex flex-col rounded-xl"
               >
                 {/* Icon */}
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6`}>

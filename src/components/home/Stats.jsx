@@ -1,69 +1,72 @@
 'use client'
-
-import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import CountUp from '../ui/CountUp'
-
+import { FaDonate, FaHandHoldingHeart, FaUsers, FaGlobe } from 'react-icons/fa'
+import { useNGOData } from '../../hooks/useNGOData'
 const Stats = () => {
-  const [stats, setStats] = useState({
-    totalDonations: 0,
-    activeNGOs: 0,
-    uniqueDonors: 0,
-    impactScore: 0
-  })
-
-  const { isConnected } = useSelector((state) => state.web3)
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      setStats({
-        totalDonations: 2450000,
-        activeNGOs: 3,
-        uniqueDonors: 12500,
-        impactScore: 98
-      })
-    }
-    
-    fetchStats()
-    const interval = setInterval(fetchStats, 30000)
-    return () => clearInterval(interval)
-  }, [isConnected])
-
+  const { stats, loading } = useNGOData()
   const statItems = [
-    { label: "Total Donations", value: stats.totalDonations, prefix: "$", suffix: "+", color: "text-green-600" },
-    { label: "Active NGOs", value: stats.activeNGOs, suffix: "+", color: "text-blue-600" },
-    { label: "Unique Donors", value: stats.uniqueDonors, suffix: "+", color: "text-orange-600" },
-    { label: "Impact Score", value: stats.impactScore, suffix: "%", color: "text-purple-600" }
+    {
+      label: "Total Transactions",
+      value: Number(stats.totalDonations).toFixed(2),
+      suffix: " MATIC",
+      icon: FaDonate,
+      color: "text-blue-600",
+      bg: "bg-blue-50"
+    },
+    {
+      label: "Active NGOs",
+      value: stats.activeNGOs,
+      suffix: "",
+      icon: FaGlobe,
+      color: "text-green-600",
+      bg: "bg-green-50"
+    },
+    {
+      label: "Total Donors",
+      value: stats.uniqueDonors,
+      suffix: "",
+      icon: FaUsers,
+      color: "text-purple-600",
+      bg: "bg-purple-50"
+    },
+    {
+      label: "Lives Impacted",
+      value: (stats.uniqueDonors * 12).toLocaleString(), // Estimated impact factor
+      suffix: "+",
+      icon: FaHandHoldingHeart,
+      color: "text-red-600",
+      bg: "bg-red-50"
+    }
   ]
-
   return (
-    <div className="bg-gradient-to-r from-green-50 to-blue-50 py-12 rounded-3xl mx-4 md:mx-8">
+    <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {statItems.map((stat, index) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {statItems.map((item, index) => (
             <div
               key={index}
-              className="text-center fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="p-6 rounded-2xl border border-gray-100 hover:border-green-100 hover:shadow-xl transition-all duration-300 group"
             >
-              <div className={`text-4xl md:text-5xl font-bold ${stat.color} mb-2`}>
-                <CountUp
-                  end={stat.value}
-                  duration={2.5}
-                  prefix={stat.prefix || ""}
-                  suffix={stat.suffix || ""}
-                  separator=","
-                />
+              <div className={`w-12 h-12 ${item.bg} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                <item.icon className={`text-xl ${item.color}`} />
               </div>
-              <p className="text-gray-600 font-medium">
-                {stat.label}
-              </p>
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                  {item.label}
+                </h3>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {loading ? "..." : item.value}
+                  </span>
+                  <span className="text-sm font-semibold text-gray-500">
+                    {item.suffix}
+                  </span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
-
-export default Stats
+export default Stats 
