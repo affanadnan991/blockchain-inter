@@ -52,22 +52,7 @@ export default function NGOSelector({ selectedNGO, onSelectNGO, ngos = [] }) {
 
             {/* NGO List */}
             <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
-                {/* General Pool Option */}
-                <NGOOption
-                    ngo={{
-                        id: 'general-pool',
-                        name: 'General Pool',
-                        description: 'Distributed among all verified NGOs',
-                        logo: '/images/general-pool.svg',
-                        category: 'All Causes',
-                        trustScore: 100,
-                        address: '0x0000000000000000000000000000000000000000'
-                    }}
-                    isSelected={selectedNGO?.id === 'general-pool'}
-                    onSelect={() => onSelectNGO({ id: 'general-pool', address: '0x0000000000000000000000000000000000000000' })}
-                />
-
-                {/* Individual NGOs */}
+                {/* All NGOs including General Pool */}
                 {filteredNGOs.length > 0 ? (
                     filteredNGOs.map((ngo) => (
                         <NGOOption

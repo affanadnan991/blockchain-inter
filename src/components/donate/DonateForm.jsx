@@ -17,7 +17,7 @@ import { parseEther, formatTokenAmount } from '../../utils/formatters'
 /**
  * Main Donation Form Component
  */
-export default function DonateForm({ ngos = [], platformFeePercent = 2 }) {
+export default function DonateForm({ ngos = [], platformFeePercent = 2, loading = false }) {
     const { address, isConnected } = useWeb3()
     const { contractAddress } = useDonationContract()
 

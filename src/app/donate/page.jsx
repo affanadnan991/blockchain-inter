@@ -1,40 +1,45 @@
-import DonateForm from '../../components/donate/DonateForm'
+'use client'
 
-// Mock NGO data - Replace with actual data from contract
-const mockNGOs = [
-  {
-    id: '1',
-    name: 'Clean Water Initiative',
-    description: 'Providing clean water to communities in need',
-    category: 'Water & Sanitation',
-    logo: '/images/ngos/clean-water.jpg',
-    address: '0x1234567890123456789012345678901234567890',
-    trustScore: 98,
-    donorCount: 1250,
-  },
-  {
-    id: '2',
-    name: 'Education for All',
-    description: 'Building schools and providing education resources',
-    category: 'Education',
-    logo: '/images/ngos/education.jpg',
-    address: '0x2345678901234567890123456789012345678901',
-    trustScore: 95,
-    donorCount: 850,
-  },
-  {
-    id: '3',
-    name: 'Medical Relief Foundation',
-    description: 'Emergency medical care and support',
-    category: 'Healthcare',
-    logo: '/images/ngos/medical.jpg',
-    address: '0x3456789012345678901234567890123456789012',
-    trustScore: 97,
-    donorCount: 2100,
-  },
-]
+import { useState, useEffect } from 'react'
+import DonateForm from '../../components/donate/DonateForm'
+import { useRegisteredNGOs } from '../../hooks/useContractQuery'
+import { useDonationContract } from '../../hooks/useDonationContract'
 
 export default function DonatePage() {
+  const { ngos, loading: ngosLoading } = useRegisteredNGOs()
+  const { platformFeePercent } = useDonationContract()
+  const [ngoOptions, setNgoOptions] = useState([])
+
+  // Transform NGO data to component format
+  useEffect(() => {
+    if (ngos && ngos.length > 0) {
+      const transformed = ngos.map((ngo) => ({
+        id: ngo.address,
+        name: ngo.name || `NGO ${ngo.address.substring(0, 10)}...`,
+        description: ngo.description || 'Blockchain-verified organization',
+        category: ngo.category || 'General Welfare',
+        logo: ngo.logo || '/ngo-images/default.png',
+        address: ngo.address,
+        trustScore: ngo.trustScore || 90,
+        isActive: ngo.isActive,
+      }))
+
+      // Add general pool option
+      transformed.unshift({
+        id: 'general-pool',
+        name: 'General Pool',
+        description: 'Donate to the general pool - funds will be allocated by administrators',
+        category: 'General',
+        logo: '/ngo-images/general-pool.png',
+        address: '0x0000000000000000000000000000000000000000',
+        trustScore: 100,
+        isActive: true,
+      })
+
+      setNgoOptions(transformed)
+    }
+  }, [ngos])
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4">
       <div className="container mx-auto max-w-7xl">
@@ -49,7 +54,7 @@ export default function DonatePage() {
         </div>
 
         {/* Donation Form */}
-        <DonateForm ngos={mockNGOs} platformFeePercent={2} />
+        <DonateForm ngos={ngoOptions} platformFeePercent={platformFeePercent || 2} loading={ngosLoading} />
 
         {/* Trust Indicators */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
