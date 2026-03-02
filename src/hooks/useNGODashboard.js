@@ -1,8 +1,9 @@
 import { useAccount, useContractRead, useContractWrite, useConfig, useChainId } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { useState, useEffect, useMemo } from 'react';
-import { getContractAddress, getSupportedTokens } from '../utils/web3Config';
-import DonationPlatformABI from '../contracts/DonationPlatform.json';
+import { getContractAddress } from '../utils/web3Config';
+import { getSupportedTokens } from '../utils/tokenConfig';
+import DonationPlatformABI from '../contracts/abis/DonationPlatform.json';
 import { toast } from 'react-hot-toast';
 import { parseUnits, formatUnits } from 'viem';
 

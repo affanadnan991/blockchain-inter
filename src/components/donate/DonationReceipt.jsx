@@ -3,6 +3,7 @@
 import React from 'react'
 import { FaCheckCircle, FaDownload, FaShareAlt, FaHeart } from 'react-icons/fa'
 import { shortenAddress } from '../../utils/formatters'
+import { formatTokenAmount } from '../../utils/tokenConfig' 
 
 /**
  * Donation Receipt Component
@@ -28,8 +29,11 @@ export default function DonationReceipt({ donation, ngo, token }) {
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
                     <div className="flex justify-between items-center mb-4">
                         <span className="text-sm text-gray-500 dark:text-gray-400">Amount Donated</span>
-                        <span className="text-2xl font-black text-green-600 dark:text-green-400">
-                            {donation.amount} {token?.symbol || 'MATIC'}
+                        <span className="text-2xl font-black text-green-600 dark:text-green-400 flex items-center gap-2">
+                            {token?.logo && (
+                                <img src={token.logo} alt={token.symbol} className="w-6 h-6 object-contain" />
+                            )}
+                            {formatTokenAmount(donation.amount, token?.decimals || 18)} {token?.symbol || 'MATIC'}
                         </span>
                     </div>
                     <div className="flex justify-between items-center py-3 border-t border-gray-200 dark:border-gray-700">

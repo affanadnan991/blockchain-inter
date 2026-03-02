@@ -1,35 +1,40 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { FaHandHoldingHeart, FaBars, FaTimes } from 'react-icons/fa'
 import logo from '../../../public/images/logo.png'
 import WalletConnect from '../wallet/WalletConnect'
+import TokenDropdown from './TokenDropdown'
 
-export default function Header() {
+function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
-  // Change background on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  const navLinks = [
+  // Memoize nav links
+  const navLinks = React.useMemo(() => [
     { name: 'Home', href: '/' },
     { name: 'Discover NGOs', href: '/ngos' },
     { name: 'Donate', href: '/donate' },
     { name: 'NGO Portal', href: '/ngo' },
-  ]
+  ], [])
 
-  const isActive = (path) => pathname === path
+  // Memoize scroll handler
+  const handleScroll = useCallback(() => {
+    setIsScrolled(window.scrollY > 20)
+  }, [])
+
+  // Memoize isActive check
+  const isActive = useCallback((path) => pathname === path, [pathname])
+
+  // Change background on scroll
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
 
   return (
     <header
@@ -59,6 +64,7 @@ export default function Header() {
               </Link>
             ))}
             <div className="h-6 w-px bg-gray-200 mx-2"></div>
+            <TokenDropdown />
             <WalletConnect />
           </div>
 
@@ -86,7 +92,10 @@ export default function Header() {
               {link.name}
             </Link>
           ))}
-          <div className="pt-4 border-t border-gray-50">
+          <div className="pt-4 border-t border-gray-50 space-y-3">
+            <div className="pb-2">
+              <TokenDropdown />
+            </div>
             <WalletConnect />
           </div>
         </div>
@@ -94,3 +103,6 @@ export default function Header() {
     </header>
   )
 }
+
+export default React.memo(Header)
+

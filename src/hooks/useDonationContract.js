@@ -1,7 +1,7 @@
 import { useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
-import DonationPlatformABI from '../contracts/DonationPlatform.json'
+import DonationPlatformABI from '../contracts/abis/DonationPlatform.json'
 import { getContractAddress } from '../utils/web3Config'
 import { createMessageHash, createPurposeHash } from '../utils/formatters'
 import useWeb3 from './useWeb3'
@@ -12,6 +12,9 @@ import useWeb3 from './useWeb3'
 export const useDonationContract = () => {
     const { chainId, isConnected } = useWeb3()
     const contractAddress = getContractAddress(chainId)
+    if (!contractAddress) {
+        console.warn('useDonationContract: no contract configured for chain', chainId)
+    }
 
     /**
      * Read contract data - Platform Stats
@@ -89,6 +92,9 @@ export const useDonationContract = () => {
 export const useDonateMATIC = () => {
     const { chainId } = useWeb3()
     const contractAddress = getContractAddress(chainId)
+    if (!contractAddress) {
+        console.warn('useDonateMATIC: no contract configured for chain', chainId)
+    }
     const [txHash, setTxHash] = useState(null)
 
     const { config } = usePrepareContractWrite({
@@ -137,6 +143,9 @@ export const useDonateMATIC = () => {
 export const useDonateToNGO = () => {
     const { chainId } = useWeb3()
     const contractAddress = getContractAddress(chainId)
+    if (!contractAddress) {
+        console.warn('useDonateToNGO: no contract configured for chain', chainId)
+    }
     const [txHash, setTxHash] = useState(null)
 
     const { config } = usePrepareContractWrite({
@@ -185,6 +194,9 @@ export const useDonateToNGO = () => {
 export const useDonateToken = () => {
     const { chainId } = useWeb3()
     const contractAddress = getContractAddress(chainId)
+    if (!contractAddress) {
+        console.warn('useDonateToken: no contract configured for chain', chainId)
+    }
     const [txHash, setTxHash] = useState(null)
 
     const { config } = usePrepareContractWrite({

@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { usePublicClient, useWalletClient, useAccount } from 'wagmi'
 import { getContractAddress } from '../utils/web3Config'
-import DonationPlatformABI from '../contracts/DonationPlatform.json'
+import DonationPlatformABI from '../contracts/abis/DonationPlatform.json'
 import { toast } from 'react-hot-toast'
 import { parseEther, keccak256, toHex, encodePacked } from 'viem'
 
@@ -70,14 +70,31 @@ export const useAdmin = () => {
         return executeAdminTx('manageNGOApprover', [ngoAddr, approver, status], 'Approver Status Updated')
     }
 
+    const pauseNGOWithdrawals = async (ngoAddr, paused) => {
+        return executeAdminTx('pauseNGOWithdrawals', [ngoAddr, paused], `Withdrawals ${paused ? 'Paused' : 'Unpaused'}`)
+    }
+
     // Token & Fee Management
     const whitelistToken = async (tokenAddr, status) => {
         return executeAdminTx('whitelistToken', [tokenAddr, status], `Token ${status ? 'Whitelisted' : 'Removed'}`)
     }
 
     const setTokenMinDonation = async (tokenAddr, minAmount, decimals = 18) => {
-        const amount = parseEther(minAmount.toString()) // simplified for now, should handle decimals
+        // convert human amount to raw depending on decimals
+        let amountStr = minAmount.toString()
+        // use parseEther for 18 decimals or manual for others
+        let amount
+        if (decimals === 18) {
+            amount = parseEther(amountStr)
+        } else {
+            const factor = BigInt(10) ** BigInt(decimals)
+            amount = BigInt(Math.floor(parseFloat(amountStr) * Math.pow(10, decimals)))
+        }
         return executeAdminTx('setTokenMinDonation', [tokenAddr, amount], 'Minimum Donation Updated')
+    }
+
+    const setFeeOnTransferBlacklist = async (tokenAddr, status) => {
+        return executeAdminTx('setFeeOnTransferBlacklist', [tokenAddr, status], `Fee-on-transfer ${status ? 'blocked' : 'unblocked'}`)
     }
 
     const updatePlatformFee = async (newPercent) => {
@@ -107,8 +124,10 @@ export const useAdmin = () => {
         updateNGOStatus,
         updateMinApprovals,
         manageNGOApprover,
+        pauseNGOWithdrawals,
         whitelistToken,
         setTokenMinDonation,
+        setFeeOnTransferBlacklist,
         updatePlatformFee,
         updateFeeCollector,
         pause,

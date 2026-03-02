@@ -16,8 +16,8 @@ export default function Home() {
             <main>
                 <Hero />
 
-                {/* Statistics Section */}
-                <section className="bg-white py-12">
+                {/* Statistics Section - Transparency & Impact Metrics */}
+                <section className="bg-white py-20 md:py-28">
                     <div className="container mx-auto px-4">
                         <div className="max-w-7xl mx-auto">
                             <Stats />
@@ -25,16 +25,35 @@ export default function Home() {
                     </div>
                 </section>
 
+                {/* Spacing Divider */}
+                <div className="h-16 md:h-20 bg-gradient-to-b from-white to-gray-50" />
+
+                {/* Features Section */}
                 <Features />
 
+                {/* Spacing Divider */}
+                <div className="h-16 md:h-20 bg-gradient-to-b from-gray-50 to-white" />
+
+                {/* Featured NGOs Section */}
                 <FeaturedNGOs />
 
+                {/* Spacing Divider */}
+                <div className="h-16 md:h-20 bg-gradient-to-t from-white to-gray-50" />
+
+                {/* How It Works Section */}
                 <HowItWorks />
 
+                {/* Spacing Divider */}
+                <div className="h-16 md:h-20 bg-gradient-to-b from-gray-50 to-white" />
+
+                {/* Recent Donations Section */}
                 <RecentDonations />
 
+                {/* Spacing Divider */}
+                <div className="h-8 md:h-12" />
+
                 {/* Improved CTA Section */}
-                <section className="py-24 bg-green-600 text-white relative overflow-hidden">
+                <section className="py-28 bg-gradient-to-br from-green-600 to-green-700 text-white relative overflow-hidden">
                     <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
                     <div className="container mx-auto px-4 text-center relative z-10">
                         <h2 className="text-4xl md:text-5xl font-bold mb-8">

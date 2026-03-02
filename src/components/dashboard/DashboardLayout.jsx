@@ -10,7 +10,6 @@ import { shortenAddress } from '../../utils/formatters';
 export default function DashboardLayout({ children, activeTab = 'overview' }) {
     const { address } = useAccount();
     const [mounted, setMounted] = useState(false);
-
     useEffect(() => {
         setMounted(true);
     }, []);

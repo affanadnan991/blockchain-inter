@@ -7,12 +7,25 @@ import WithdrawalForm from '../../../components/dashboard/WithdrawalForm';
 import RequestList from '../../../components/dashboard/RequestList';
 import { useNGODashboard } from '../../../hooks/useNGODashboard';
 import { useAccount } from 'wagmi';
+import useWeb3 from '../../../hooks/useWeb3';
 import { FaLock, FaExclamationCircle } from 'react-icons/fa';
 import Link from 'next/link';
 
 export default function NGODashboardPage() {
     const { isConnected } = useAccount();
+    const { isWrongNetwork } = useWeb3();
     const { isNGO, stats, balances, requests, loading, createRequest, executeRequest } = useNGODashboard();
+
+    if (isWrongNetwork) {
+        return (
+            <div className="min-h-screen bg-[#0a0b14] flex items-center justify-center p-6 text-center">
+                <div className="max-w-md space-y-6">
+                    <h1 className="text-3xl font-bold text-white">Wrong Network</h1>
+                    <p className="text-white/60">Please switch your wallet to Polygon network to access the NGO dashboard.</p>
+                </div>
+            </div>
+        )
+    }
 
     if (!isConnected) {
         return (
@@ -61,13 +74,14 @@ export default function NGODashboardPage() {
                         <h1 className="text-4xl font-bold text-white">Dashboard Overview</h1>
                     </div>
                     <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/5">
+                    <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center text-yellow-500">
+                            <FaLock />
+                        </div>
                         <div className="text-right">
                             <p className="text-[10px] text-white/40 uppercase font-bold">Pending Approvals</p>
                             <p className="text-xl font-bold text-white">{stats?.pendingRequestsCount || 0}</p>
                         </div>
-                        <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center text-yellow-500">
-                            <FaLock />
-                        </div>
+                        
                     </div>
                 </div>
             </div>

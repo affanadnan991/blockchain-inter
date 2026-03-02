@@ -1,7 +1,9 @@
 import React from 'react';
 import { FaCheck, FaExternalLinkAlt, FaClock, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import { formatTokenAmount, shortenAddress } from '../../utils/formatters';
-import { SUPPORTED_TOKENS, getExplorerUrl } from '../../utils/web3Config';
+import { getExplorerUrl } from '../../utils/web3Config';
+import { useChainId } from 'wagmi';
+import { getTokenByAddress } from '../../utils/tokenConfig';
 export default function RequestList({ requests = [], onExecute, loading }) {
     const getStatusBadge = (request) => {
         if (request.executed) {
@@ -24,9 +26,16 @@ export default function RequestList({ requests = [], onExecute, loading }) {
             </span>
         );
     };
+    const chainId = useChainId();
+
     const getTokenSymbol = (tokenAddress) => {
-        const token = Object.values(SUPPORTED_TOKENS).find(t => t.address.toLowerCase() === tokenAddress.toLowerCase());
+        const token = getTokenByAddress(tokenAddress, chainId);
         return token ? token.symbol : 'UNKNOWN';
+    };
+
+    const getTokenDecimals = (tokenAddress) => {
+        const token = getTokenByAddress(tokenAddress, chainId);
+        return token ? token.decimals : 18;
     };
     return (
         <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden">
@@ -71,9 +80,15 @@ export default function RequestList({ requests = [], onExecute, loading }) {
                                     <td className="px-6 py-4 text-sm font-mono text-white/60">#{req.id.slice(-4)}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-white">
-                                                {formatTokenAmount(req.amount, 18)} {getTokenSymbol(req.token)}
-                                            </span>
+                                            <span className="font-bold text-white flex items-center gap-1">
+                                            {(() => {
+                                                const t = getTokenByAddress(req.token, chainId);
+                                                return t && t.logo ? (
+                                                    <img src={t.logo} alt={t.symbol} className="w-4 h-4 object-contain" />
+                                                ) : null;
+                                            })()}
+                                            {formatTokenAmount(req.amount, getTokenDecimals(req.token))} {getTokenSymbol(req.token)}
+                                        </span>
                                             <span className="text-xs text-white/40">NGO Funds</span>
                                         </div>
                                     </td>

@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { FaPaperPlane, FaInfoCircle, FaCoins } from 'react-icons/fa';
-import { SUPPORTED_TOKENS } from '../../utils/web3Config';
+import { useWeb3 } from '../../hooks/useWeb3';
+import { getSupportedTokens } from '../../utils/tokenConfig';
 export default function WithdrawalForm({ onSubmit, loading, balances = {} }) {
+    const { chainId } = useWeb3();
+
+    const tokens = getSupportedTokens(chainId);
+
     const [formData, setFormData] = useState({
-        tokenKey: 'MATIC',
+        tokenKey: tokens[0]?.symbol || 'MATIC',
         amount: '',
         purpose: ''
     });
@@ -24,19 +29,19 @@ export default function WithdrawalForm({ onSubmit, loading, balances = {} }) {
                 {/* Token Selection */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-white/60">Select Token</label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {Object.entries(SUPPORTED_TOKENS).map(([key, token]) => (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+                        {tokens.map((token) => (
                             <button
-                                key={key}
+                                key={token.symbol}  
                                 type="button"
-                                onClick={() => setFormData({ ...formData, tokenKey: key })}
-                                className={`flex items-center gap-2 p-3 rounded-xl border transition-all ${formData.tokenKey === key
+                                onClick={() => setFormData({ ...formData, tokenKey: token.symbol })}
+                                className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-lg border transition-all \n${formData.tokenKey === token.symbol
                                         ? 'bg-primary/20 border-primary text-white'
                                         : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
                                     }`}
                             >
-                                <img src={token.logo} alt={token.symbol} className="w-5 h-5 object-contain" />
-                                <span className="font-medium">{token.symbol}</span>
+                                <img src={token.logo} alt={token.symbol} className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
+                                <span className="font-medium text-xs sm:text-sm truncate max-w-full">{token.symbol}</span>
                             </button>
                         ))}
                     </div>

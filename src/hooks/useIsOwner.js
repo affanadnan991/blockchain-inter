@@ -2,7 +2,7 @@
 
 import useWeb3 from './useWeb3'
 import { getContractAddress } from '../utils/web3Config'
-import DonationPlatformABI from '../contracts/DonationPlatform.json'
+import DonationPlatformABI from '../contracts/abis/DonationPlatform.json'
 import { useContractRead } from 'wagmi'
 
 export const useIsOwner = () => {

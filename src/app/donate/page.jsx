@@ -1,14 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useChainId } from 'wagmi'
 import DonateForm from '../../components/donate/DonateForm'
 import { useRegisteredNGOs } from '../../hooks/useContractQuery'
 import { useDonationContract } from '../../hooks/useDonationContract'
+import { TOKEN_REGISTRY } from '../../utils/tokenConfig'
 
 export default function DonatePage() {
   const { ngos, loading: ngosLoading } = useRegisteredNGOs()
   const { platformFeePercent } = useDonationContract()
+  const searchParams = useSearchParams()
+  const chainId = useChainId()
   const [ngoOptions, setNgoOptions] = useState([])
+
+  // Get token from query params
+  const tokenFromQuery = useMemo(() => {
+    const tokenAddress = searchParams.get('token')
+    if (!tokenAddress) return null
+
+    const tokens = TOKEN_REGISTRY[chainId] || []
+    return tokens.find(t => t.address.toLowerCase() === tokenAddress.toLowerCase())
+  }, [searchParams, chainId])
 
   // Transform NGO data to component format
   useEffect(() => {
@@ -54,7 +68,7 @@ export default function DonatePage() {
         </div>
 
         {/* Donation Form */}
-        <DonateForm ngos={ngoOptions} platformFeePercent={platformFeePercent || 2} loading={ngosLoading} />
+        <DonateForm ngos={ngoOptions} platformFeePercent={platformFeePercent || 2} loading={ngosLoading} selectedToken={tokenFromQuery} />
 
         {/* Trust Indicators */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">

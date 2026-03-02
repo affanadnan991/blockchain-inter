@@ -1,13 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { usePublicClient, useChainId, useContractRead } from 'wagmi'
 import { parseAbiItem, formatEther } from 'viem'
-import DonationPlatformABI from '../contracts/DonationPlatform.json'
+import DonationPlatformABI from '../contracts/abis/DonationPlatform.json'
 import { getContractAddress } from '../utils/web3Config'
+
+// Cache to avoid redundant fetches
+const ngoDataCache = new Map()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+const BLOCK_BATCH_SIZE = 10000n // Fetch in chunks to avoid RPC limits
 
 /**
  * Hook to fetch and manage NGO data and platform statistics from the smart contract
+ * OPTIMIZED: Limited block ranges, batch fetching, caching
  */
 export const useNGOData = () => {
     const publicClient = usePublicClient()
@@ -18,28 +24,46 @@ export const useNGOData = () => {
     const [recentDonations, setRecentDonations] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const cacheKeyRef = useRef(`ngo_${chainId}_${contractAddress}`)
 
     /**
      * Fetch all registered NGOs by querying NGORegistered events
+     * OPTIMIZATION: Uses rolling block window instead of from block 0
      */
     const fetchAllNGOs = useCallback(async () => {
         if (!publicClient || !contractAddress) return
 
+        const cacheKey = cacheKeyRef.current
+        const cached = ngoDataCache.get(cacheKey)
+        
+        // Return cached data if still fresh
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+            setNgos(cached.ngos)
+            setLoading(false)
+            return
+        }
+
         try {
             setLoading(true)
 
-            // 1. Get NGORegistered logs
+            // Get current block number for optimized range
+            const blockNumber = await publicClient.getBlockNumber()
+            // Look back 2 days worth of blocks (on Polygon ~2880 blocks/day)
+            const lookbackBlocks = 5760n
+            const fromBlock = blockNumber > lookbackBlocks ? blockNumber - lookbackBlocks : 0n
+
+            // 1. Get NGORegistered logs with optimized range
             const logs = await publicClient.getLogs({
                 address: contractAddress,
                 event: parseAbiItem('event NGORegistered(address indexed ngo, bytes32 nameHash, uint64 timestamp)'),
-                fromBlock: 0n, // In production, use a more recent block or indexed data
+                fromBlock,
                 toBlock: 'latest'
             })
 
             const ngoAddresses = [...new Set(logs.map(log => log.args.ngo))]
 
-            // 2. Fetch details for each NGO
-            const ngoDetails = await Promise.all(
+            // 2. Fetch details for each NGO - batch in parallel
+            const ngoDetails = await Promise.allSettled(
                 ngoAddresses.map(async (address) => {
                     try {
                         const data = await publicClient.readContract({
@@ -49,32 +73,44 @@ export const useNGOData = () => {
                             args: [address]
                         })
 
-                        // Map contract response to NGO object
-                        // Response structure: [name, admin, isRegistered, isActive, totalWithdrawn, withdrawalCount, minApprovals, approversCount]
+                        const regLog = logs.find(l => l.args.ngo.toLowerCase() === address.toLowerCase())
+                        const nameHash = regLog ? regLog.args.nameHash : null
+
                         return {
                             address,
-                            name: data[0],
-                            admin: data[1],
-                            isRegistered: data[2],
-                            isActive: data[3],
-                            totalWithdrawn: formatEther(data[4]),
-                            withdrawalCount: Number(data[5]),
-                            minApprovals: data[6],
-                            // Add some mock UI data for now (since it's not in contract)
+                            nameHash,
+                            isActive: data[6],
+                            withdrawalsPaused: data[7],
+                            totalWithdrawn: formatEther(data[1]),
+                            withdrawalCount: Number(data[4]),
+                            pendingRequests: Number(data[5]),
+                            minApprovals: data[8],
+                            approversCount: data[9],
                             logo: `/ngo-images/${address.toLowerCase()}.png`,
-                            description: `${data[0]} is a blockchain-verified organization focused on transparent social impact.`,
-                            category: "General Welfare",
-                            verified: data[2],
-                            trustScore: 95 + (Number(data[5]) > 0 ? 3 : 0) // Dynamic trust score based on activity
+                            description: nameHash
+                                ? `NGO registered with nameHash ${nameHash.slice(0, 6)}...`
+                                : 'Blockchain-verified organization',
                         }
                     } catch (err) {
                         console.error(`Error fetching info for NGO ${address}:`, err)
-                        return null
+                        throw err
                     }
                 })
             )
 
-            setNgos(ngoDetails.filter(ngo => ngo !== null && ngo.isActive))
+            // Filter fulfilled promises only
+            const validNGOs = ngoDetails
+                .filter(result => result.status === 'fulfilled')
+                .map(result => result.value)
+
+            setNgos(validNGOs)
+            
+            // Cache the result
+            ngoDataCache.set(cacheKey, {
+                ngos: validNGOs,
+                timestamp: Date.now()
+            })
+
         } catch (err) {
             console.error('Error fetching NGOs:', err)
             setError(err.message)
@@ -85,16 +121,21 @@ export const useNGOData = () => {
 
     /**
      * Fetch recent donation events
+     * OPTIMIZATION: Fetch from recent blocks only
      */
     const fetchRecentDonations = useCallback(async () => {
         if (!publicClient || !contractAddress) return
 
         try {
+            const blockNumber = await publicClient.getBlockNumber()
+            // Look back last 1000 blocks for recent donations
+            const fromBlock = blockNumber > 1000n ? blockNumber - 1000n : 0n
+
             const logs = await publicClient.getLogs({
                 address: contractAddress,
                 event: parseAbiItem('event DonationReceived(uint256 indexed donationId, address indexed donor, address indexed designatedNGO, address token, uint256 amount, bytes32 messageHash, uint64 timestamp)'),
-                fromBlock: 'latest', // For demo purposes, we might want to go back some blocks
-                // Using a block range in real apps
+                fromBlock,
+                toBlock: 'latest'
             })
 
             const donations = logs.map(log => ({
@@ -106,7 +147,7 @@ export const useNGOData = () => {
                 timestamp: Number(log.args.timestamp) * 1000
             }))
 
-            setRecentDonations(donations.reverse())
+            setRecentDonations(donations.reverse().slice(0, 10)) // Keep last 10 only
         } catch (err) {
             console.error('Error fetching recent donations:', err)
         }
@@ -119,17 +160,18 @@ export const useNGOData = () => {
         address: contractAddress,
         abi: DonationPlatformABI,
         functionName: 'getPlatformStats',
-        watch: true,
+        watch: false, // Disable auto-watch for perf, refresh manually
     })
 
     const { data: isPaused } = useContractRead({
         address: contractAddress,
         abi: DonationPlatformABI,
         functionName: 'paused',
-        watch: true,
+        watch: false,
     })
 
-    const stats = platformStats ? {
+    // Memoize stats object to prevent unnecessary re-renders
+    const stats = useMemo(() => platformStats ? {
         totalDonations: formatEther(platformStats[0]),
         activeNGOs: Number(platformStats[1]),
         uniqueDonors: Number(platformStats[2]),
@@ -139,13 +181,17 @@ export const useNGOData = () => {
         activeNGOs: 0,
         uniqueDonors: 0,
         contractBalance: '0'
-    }
+    }, [platformStats])
 
-    // Initial fetch
+    // Initial fetch with debounce on contractAddress change
     useEffect(() => {
         if (contractAddress) {
-            fetchAllNGOs()
-            fetchRecentDonations()
+            const timer = setTimeout(() => {
+                fetchAllNGOs()
+                fetchRecentDonations()
+            }, 300)
+            
+            return () => clearTimeout(timer)
         }
     }, [contractAddress, fetchAllNGOs, fetchRecentDonations])
 
@@ -160,4 +206,4 @@ export const useNGOData = () => {
     }
 }
 
-export default useNGOData 
+export default useNGOData

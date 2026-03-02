@@ -1,0 +1,306 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "DonationPlatform",
+  "sourceName": "contracts/DonationPlatform.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "AlreadyApproved",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ArrayLengthMismatch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BelowMinimumDonation",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DonationAlreadyWithdrawn",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DonationNotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DuplicateApprover",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "FeeOnTransferTokenBlocked",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientApprovals",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAddress",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidTokenMatch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MaxApproversReached",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MaxNGOCountReached",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MaxWithdrawalItemsExceeded",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NGOAlreadyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NGOInactive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NGONotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NoPendingRequests",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotApprover",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotInEmergencyMode",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OwnerCannotBeNGO",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PurposeHashMismatch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequestAlreadyExecuted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequestAlreadyRejected",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequestNotExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequestNotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TokenNotWhitelisted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TooManyPendingRequests",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TotalAmountOverflow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnauthorizedCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WithdrawalCooldown",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WithdrawalsPaused",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Paused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Unpaused",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "acceptOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061001a3361002e565b60016002556003805460ff1916905561009a565b600180546001600160a01b03191690556100478161004a565b50565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b610305806100a96000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c80635c975abb14610067578063715018a61461008257806379ba50971461008c5780638da5cb5b14610094578063e30c3978146100b9578063f2fde38b146100ca575b600080fd5b60035460ff1660405190151581526020015b60405180910390f35b61008a6100dd565b005b61008a6100f1565b6000546001600160a01b03165b6040516001600160a01b039091168152602001610079565b6001546001600160a01b03166100a1565b61008a6100d836600461029f565b610170565b6100e56101e1565b6100ef600061023b565b565b60015433906001600160a01b031681146101645760405162461bcd60e51b815260206004820152602960248201527f4f776e61626c6532537465703a2063616c6c6572206973206e6f7420746865206044820152683732bb9037bbb732b960b91b60648201526084015b60405180910390fd5b61016d8161023b565b50565b6101786101e1565b600180546001600160a01b0383166001600160a01b031990911681179091556101a96000546001600160a01b031690565b6001600160a01b03167f38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e2270060405160405180910390a350565b6000546001600160a01b031633146100ef5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161015b565b600180546001600160a01b031916905561016d81600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6000602082840312156102b157600080fd5b81356001600160a01b03811681146102c857600080fd5b939250505056fea2646970667358221220a0f6fc1aed4660b78218d7bb7692b67fb8ec05d57a7d86a4533e0291d969ecc264736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c80635c975abb14610067578063715018a61461008257806379ba50971461008c5780638da5cb5b14610094578063e30c3978146100b9578063f2fde38b146100ca575b600080fd5b60035460ff1660405190151581526020015b60405180910390f35b61008a6100dd565b005b61008a6100f1565b6000546001600160a01b03165b6040516001600160a01b039091168152602001610079565b6001546001600160a01b03166100a1565b61008a6100d836600461029f565b610170565b6100e56101e1565b6100ef600061023b565b565b60015433906001600160a01b031681146101645760405162461bcd60e51b815260206004820152602960248201527f4f776e61626c6532537465703a2063616c6c6572206973206e6f7420746865206044820152683732bb9037bbb732b960b91b60648201526084015b60405180910390fd5b61016d8161023b565b50565b6101786101e1565b600180546001600160a01b0383166001600160a01b031990911681179091556101a96000546001600160a01b031690565b6001600160a01b03167f38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e2270060405160405180910390a350565b6000546001600160a01b031633146100ef5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161015b565b600180546001600160a01b031916905561016d81600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6000602082840312156102b157600080fd5b81356001600160a01b03811681146102c857600080fd5b939250505056fea2646970667358221220a0f6fc1aed4660b78218d7bb7692b67fb8ec05d57a7d86a4533e0291d969ecc264736f6c63430008180033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

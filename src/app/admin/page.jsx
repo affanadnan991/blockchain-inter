@@ -36,7 +36,11 @@ export default function AdminPage() {
       const adminAddresses = [
         '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' // Hardhat default
       ]
-      setIsAdmin(adminAddresses.includes(address))
+     setIsAdmin(
+  adminAddresses.some(
+    admin => admin.toLowerCase() === address?.toLowerCase()
+  )
+)
       
       // Load admin stats
       setAdminStats({

@@ -17,8 +17,8 @@ import { parseEther, formatTokenAmount } from '../../utils/formatters'
 /**
  * Main Donation Form Component
  */
-export default function DonateForm({ ngos = [], platformFeePercent = 2, loading = false }) {
-    const { address, isConnected } = useWeb3()
+export default function DonateForm({ ngos = [], platformFeePercent = 2, loading = false, selectedToken: selectedTokenProp = null }) {
+    const { address, isConnected, isWrongNetwork } = useWeb3()
     const { contractAddress } = useDonationContract()
 
     // Form state
@@ -26,6 +26,13 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
     const [selectedNGO, setSelectedNGO] = useState(null)
     const [amount, setAmount] = useState('')
     const [message, setMessage] = useState('')
+
+    // Initialize selected token from prop if provided
+    useEffect(() => {
+      if (selectedTokenProp && !selectedToken) {
+        setSelectedToken(selectedTokenProp)
+      }
+    }, [selectedTokenProp, selectedToken])
 
     // Transaction state
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -51,7 +58,12 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
     } = useTokenContract(!isNativeToken ? selectedToken?.address : null)
 
     // Validation
-    const isValid = amount && parseFloat(amount) > 0 && selectedToken && isConnected
+    const isValid =
+        amount &&
+        parseFloat(amount) > 0 &&
+        selectedToken &&
+        isConnected &&
+        !isWrongNetwork
 
     // Handle donation submission
     const handleDonate = async () => {
@@ -196,6 +208,13 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
                         selectedToken={selectedToken}
                         onSelectToken={setSelectedToken}
                     />
+
+                    {/* Wrong network reminder */}
+                    {isWrongNetwork && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            ⚠️ You're connected to an unsupported network. Please switch to Polygon.
+                        </div>
+                    )}
 
                     {/* NGO Selector */}
                     <NGOSelector

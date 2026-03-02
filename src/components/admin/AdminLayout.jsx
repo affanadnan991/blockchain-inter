@@ -6,14 +6,14 @@ import { usePathname } from 'next/navigation'
 import { FaGears, FaBuildingShield, FaCoins, FaChartLine, FaShieldHalved } from 'react-icons/fa6'
 import { useAccount } from 'wagmi'
 import { useContractRead } from 'wagmi'
-import DonationPlatformABI from '../../contracts/DonationPlatform.json'
+import DonationPlatformABI from '../../contracts/abis/DonationPlatform.json'
 import { getContractAddress } from '../../utils/web3Config'
 import useWeb3 from '../../hooks/useWeb3'
 import WalletConnect from '../wallet/WalletConnect'
 
 const AdminLayout = ({ children }) => {
     const pathname = usePathname()
-    const { address, isConnected, chainId } = useWeb3()
+    const { address, isConnected, chainId, isWrongNetwork } = useWeb3()
 
     const contractAddress = getContractAddress(chainId)
 
@@ -88,7 +88,14 @@ const AdminLayout = ({ children }) => {
                 </header>
 
                 <div className="p-4 lg:p-12 flex-1">
-                    {!isOwner ? (
+                    {isWrongNetwork ? (
+                        <div className="h-full flex items-center justify-center">
+                            <div className="text-center max-w-sm">
+                                <h2 className="text-2xl font-bold text-red-600 mb-2">Wrong Network</h2>
+                                <p className="text-gray-500">Please switch to a supported network (Polygon) to access admin tools.</p>
+                            </div>
+                        </div>
+                    ) : !isOwner ? (
                         <div className="h-full flex items-center justify-center">
                             <div className="text-center max-w-sm">
                                 <div className="w-20 h-20 bg-gray-100 rounded-3xl flex items-center justify-center text-gray-400 mx-auto mb-6">
