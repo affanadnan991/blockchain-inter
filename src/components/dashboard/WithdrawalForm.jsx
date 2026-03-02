@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaPaperPlane, FaInfoCircle, FaCoins } from 'react-icons/fa';
 import { useWeb3 } from '../../hooks/useWeb3';
 import { getSupportedTokens } from '../../utils/tokenConfig';
-export default function WithdrawalForm({ onSubmit, loading, balances = {} }) {
+export default function WithdrawalForm({ onSubmit, loading, balances = {}, isNGO = true }) {
     const { chainId } = useWeb3();
 
     const tokens = getSupportedTokens(chainId);
@@ -25,7 +25,8 @@ export default function WithdrawalForm({ onSubmit, loading, balances = {} }) {
                 </div>
                 <h2 className="text-xl font-bold text-white">Create Withdrawal Request</h2>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {isNGO ? (
+                <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Token Selection */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-white/60">Select Token</label>
@@ -41,7 +42,10 @@ export default function WithdrawalForm({ onSubmit, loading, balances = {} }) {
                                     }`}
                             >
                                 <img src={token.logo} alt={token.symbol} className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
-                                <span className="font-medium text-xs sm:text-sm truncate max-w-full">{token.symbol}</span>
+                                {/* symbol visible on small screens, hidden on lg+ */}
+                                <span className="block lg:hidden font-medium text-xs sm:text-sm truncate max-w-full">{token.symbol}</span>
+                                {/* on larger screens show name on hover via abbr title */}
+                                <abbr title={token.symbol} className="hidden lg:block text-transparent">?</abbr>
                             </button>
                         ))}
                     </div>
@@ -88,7 +92,7 @@ export default function WithdrawalForm({ onSubmit, loading, balances = {} }) {
                 <div className="flex gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-200/80 text-sm">
                     <FaInfoCircle className="flex-shrink-0 mt-0.5" />
                     <p>
-                        Your withdrawal request will be sent to the assigned NGO approvers. Once enough approvals are granted, you can execute the withdrawal.
+                        Only verified NGO members can submit this form. Your withdrawal request will be sent to the assigned NGO approvers; once enough approvals are granted, you can execute the withdrawal. Donors and external users cannot create or manipulate these requests.
                     </p>
                 </div>
                 <button
@@ -99,6 +103,11 @@ export default function WithdrawalForm({ onSubmit, loading, balances = {} }) {
                     {loading ? 'Processing...' : 'Submit Withdrawal Request'}
                 </button>
             </form>
+            ) : (
+                <div className="text-center text-red-400 py-8">
+                    Only registered NGOs can create withdrawal requests. Your account does not have permission.
+                </div>
+            )}
         </div>
     );
 }

@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { FaChartPie, FaHistory, FaCog, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { FaChartPie, FaHistory, FaCog, FaSignOutAlt, FaUserCircle, FaBars, FaTimes } from 'react-icons/fa';
 import { FiLayout } from "react-icons/fi";
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
@@ -10,6 +10,8 @@ import { shortenAddress } from '../../utils/formatters';
 export default function DashboardLayout({ children, activeTab = 'overview' }) {
     const { address } = useAccount();
     const [mounted, setMounted] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -23,7 +25,17 @@ export default function DashboardLayout({ children, activeTab = 'overview' }) {
 
     return (
         <div className="min-h-screen bg-[#0a0b14] text-white flex">
-            <aside className="w-64 border-r border-white/5 bg-white/5 backdrop-blur-xl fixed h-full hidden lg:flex flex-col">
+            {/* Overlay for mobile when sidebar is open */}
+            {sidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 lg:hidden z-20"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+            
+            <aside className={`w-64 border-r border-white/5 bg-white/5 backdrop-blur-xl h-screen flex flex-col transition-transform duration-300 ${
+                sidebarOpen ? 'fixed translate-x-0 z-30' : 'fixed -translate-x-full z-30'
+            } lg:static lg:translate-x-0 lg:z-auto lg:h-screen`}>
                 <div className="p-8">
                     <Link href="/" className="flex items-center gap-3 group">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">
@@ -74,17 +86,26 @@ export default function DashboardLayout({ children, activeTab = 'overview' }) {
                 </div>
             </aside>
 
-            <main className="flex-1 lg:ml-64 min-h-screen">
-                <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between sticky top-0 bg-[#0a0b14]/80 backdrop-blur-md z-30">
-                    <div>
-                        <h1 className="text-lg font-bold">Good morning, Partner</h1>
-                        <p className="text-xs text-white/40">
-                            Here's what's happening with your NGO funds.
-                        </p>
+            <main className="flex-1 min-h-screen w-full overflow-x-hidden">
+                <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between sticky top-0 bg-[#0a0b14]/80 backdrop-blur-md z-20">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-all text-white"
+                            title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+                        >
+                            {sidebarOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                        </button>
+                        <div>
+                            <h1 className="text-lg font-bold">Good morning, Partner</h1>
+                            <p className="text-xs text-white/40">
+                                Here's what's happening with your NGO funds.
+                            </p>
+                        </div>
                     </div>
                 </header>
 
-                <div className="p-8">{children}</div>
+                <div className="p-4 sm:p-8">{children}</div>
             </main>
         </div>
     );

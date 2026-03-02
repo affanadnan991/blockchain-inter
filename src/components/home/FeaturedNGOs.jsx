@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FaShieldAlt, FaTrophy, FaCheckCircle, FaUsers, FaHeart, FaMapMarkerAlt } from 'react-icons/fa'
 import { useNGOData } from '../../hooks/useNGOData'
+import useIsOwner from '../../hooks/useIsOwner'
 
 // Memoized SkeletonCard Component
 const SkeletonCard = React.memo(() => (
@@ -129,6 +130,7 @@ NGOCard.displayName = 'NGOCard'
 
 const FeaturedNGOs = () => {
     const { ngos, loading: isLoading } = useNGOData()
+    const { isOwner } = useIsOwner()
 
     // Memoize first 3 NGOs
     const featuredNGOs = useMemo(() => ngos.slice(0, 3), [ngos])
@@ -173,9 +175,18 @@ const FeaturedNGOs = () => {
                     <div className="inline-block bg-white border border-green-100 rounded-2xl p-8 shadow-sm">
                         <h3 className="text-2xl font-bold text-gray-900 mb-2">Your NGO not listed?</h3>
                         <p className="text-gray-600 mb-4">Get verified on blockchain and join our trusted network</p>
-                        <Link href="/admin/ngos" className="inline-block px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-md">
-                            Register Your NGO
-                        </Link>
+                        {isOwner ? (
+                            <Link href="/admin/ngos" className="inline-block px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-md">
+                                Register Your NGO
+                            </Link>
+                        ) : (
+                            <>
+                                <Link href="/register-ngo" className="inline-block px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-md">
+                                    Apply to be listed
+                                </Link>
+                                <div className="text-xs text-gray-500 mt-3">Only platform admins can approve and register NGOs.</div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

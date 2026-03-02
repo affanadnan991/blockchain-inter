@@ -6,12 +6,14 @@ import Link from 'next/link'
 
 const NotificationBar = () => {
     const [isVisible, setIsVisible] = useState(true)
+    const [isMounted, setIsMounted] = useState(false)
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
 
     // Ramadan 2026 starts around February 28, 2026 (approximate)
     const ramadanStartDate = new Date('2026-02-28T00:00:00')
 
     useEffect(() => {
+        setIsMounted(true)
         // Check if user has dismissed the notification
         const dismissed = localStorage.getItem('ramadan-notification-dismissed')
         if (dismissed) {
@@ -45,7 +47,7 @@ const NotificationBar = () => {
         localStorage.setItem('ramadan-notification-dismissed', 'true')
     }
 
-    if (!isVisible) return null
+    if (!isMounted || !isVisible) return null
 
     return (
         <div className="relative bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white overflow-hidden">

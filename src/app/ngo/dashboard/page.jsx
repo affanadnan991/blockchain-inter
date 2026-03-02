@@ -103,6 +103,7 @@ export default function NGODashboardPage() {
                             onSubmit={createRequest}
                             loading={loading}
                             balances={balances}
+                            isNGO={isNGO}
                         />
                     </div>
                 </div>

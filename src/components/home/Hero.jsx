@@ -26,7 +26,7 @@ const Hero = () => {
     ]
 
     return (
-        <section className="relative overflow-hidden bg-white py-20 lg:py-32">
+        <section className="relative overflow-hidden bg-white py-12 lg:py-20 -mt-6 lg:-mt-8">
             {/* Background Elements - improved for depth */}
             <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-white to-blue-50 opacity-70" />
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-b from-green-600/5 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
