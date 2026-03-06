@@ -6,6 +6,7 @@ import { getSupportedTokens } from '../utils/tokenConfig';
 import DonationPlatformABI from '../contracts/abis/DonationPlatform.json';
 import { toast } from 'react-hot-toast';
 import { parseUnits, formatUnits } from 'viem';
+import { ethers } from 'ethers';
 
 export function useNGODashboard() {
     const { address, isConnected } = useAccount();
@@ -124,25 +125,39 @@ export function useNGODashboard() {
         functionName: 'createWithdrawalRequest',
     });
 
-    const createRequest = async (tokenSymbol, amount, purpose, donationIds = [], withdrawalAmounts = []) => {
+    const createRequest = async (tokenSymbol, amount, purpose) => {
         setLoading(true);
         try {
             const token = supportedTokens.find(t => t.symbol === tokenSymbol);
+            if (!token) {
+                throw new Error('Token not found');
+            }
+            
             const amountWei = parseUnits(amount.toString(), token.decimals);
 
-            // Note: In a real app, we'd hash the purpose string or use a proper mechanism
-            const purposeHash = '0x0000000000000000000000000000000000000000000000000000000000000001';
+            // Hash the purpose string
+            const purposeHash = ethers.utils.keccak256(
+                ethers.utils.toUtf8Bytes(purpose)
+            );
+
+            // For a simple withdrawal without specific donation tracking, use empty arrays
+            // In production, you'd need to track specific donation IDs
+            const donationIds = [];
+            const withdrawalAmounts = [];
 
             const tx = await createRequestContract({
                 args: [
-                    0, // nonce or specific ID if needed, 0 for new
-                    token.address,
-                    amountWei,
-                    purposeHash,
-                    donationIds,
-                    withdrawalAmounts
+                    token.address,           // token address
+                    amountWei,              // amount in Wei
+                    purposeHash,            // hash of purpose
+                    purpose,                // raw purpose string for verification
+                    donationIds,            // donation IDs (empty for simple withdrawals)
+                    withdrawalAmounts       // withdrawal amounts per donation (empty for simple withdrawals)
                 ]
             });
+            
+            await tx.wait();
+            await fetchRequests(); // Refresh the requests list
             toast.success('Withdrawal request created! Pending approval.');
             return tx;
         } catch (error) {

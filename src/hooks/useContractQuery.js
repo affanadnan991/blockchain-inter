@@ -6,6 +6,7 @@ import { parseAbiItem, formatEther as formatEtherViem } from 'viem'
 import DonationPlatformABI from '../contracts/abis/DonationPlatform.json'
 import { getContractAddress } from '../utils/web3Config'
 import { formatEther } from '../utils/formatters'
+import { getNGOName, loadNGORegistry } from '../utils/ngoRegistry'
 
 /**
  * Hook to fetch registered NGOs and platform data from contract
@@ -81,6 +82,11 @@ export const useRegisteredNGOs = () => {
 
                         const eventData = ngoEventMap[address?.toLowerCase()] || {}
 
+                        // Get actual NGO name from registry, fallback to address
+                        const ngoNameData = getNGOName(address);
+                        const displayName = ngoNameData?.name || `NGO ${address?.substring(0, 10)}...`;
+                        const category = ngoNameData?.category || 'General Welfare';
+
                         return {
                             address,
                             // From getNGOInfo response
@@ -99,10 +105,10 @@ export const useRegisteredNGOs = () => {
                             nameHash: eventData.nameHash,
                             registeredAt: eventData.timestamp * 1000,
 
-                            // Mock UI data (can be replaced with database)
-                            name: `NGO ${address.substring(0, 10)}...`,
+                            // UI data with actual names
+                            name: displayName,
                             description: 'Blockchain-verified organization for transparent social impact',
-                            category: 'General Welfare',
+                            category: category,
                             verified: info[6], // isActive
                             trustScore: 90 + (info[4] > 0 ? 5 : 0), // Based on withdrawal count
                         }
@@ -125,6 +131,8 @@ export const useRegisteredNGOs = () => {
 
     // Fetch on mount and when data changes
     useEffect(() => {
+        // Load NGO registry from localStorage on component mount
+        loadNGORegistry()
         fetchNGODetails()
     }, [fetchNGODetails])
 

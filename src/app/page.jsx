@@ -11,9 +11,9 @@ import Features from '../components/home/Features'
 
 export default function Home() {
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen pt-5">
             <NotificationBar />
-            <main>
+            <main className="pt-0">
                 <Hero />
 
                 {/* Statistics Section - Transparency & Impact Metrics */}

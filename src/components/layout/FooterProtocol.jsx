@@ -19,15 +19,24 @@ export default function FooterProtocol() {
 
   const isOwner = isConnected && owner && address && owner.toLowerCase() === address.toLowerCase()
 
+  // owner state is only determinable on the client; server renders as false.
+  // If we immediately render the owner link client‑side it changes the
+  // number of <li> elements, triggering a hydration error.  Delay showing
+  // the link until after mount so server/client markup stays consistent.
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <div className="lg:col-span-1">
       <h4 className="font-bold text-gray-900 mb-6">Protocol</h4>
       <ul className="space-y-4">
         <li><Link href="/ngo/dashboard" className="text-gray-500 hover:text-green-600 text-sm transition-colors">NGO Dashboard</Link></li>
-        {isOwner && (
+        <li><Link href="/smart-contract" className="text-gray-500 hover:text-green-600 text-sm transition-colors">Smart Contract</Link></li>
+        {mounted && isOwner && (
           <li><Link href="/admin/dashboard" className="text-gray-500 hover:text-green-600 text-sm transition-colors">Admin Panel</Link></li>
         )}
-        <li><Link href="/smart-contract" className="text-gray-500 hover:text-green-600 text-sm transition-colors">Smart Contract</Link></li>
       </ul>
     </div>
   )

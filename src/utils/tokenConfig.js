@@ -5,6 +5,7 @@
  */
 
 import { polygon, polygonMumbai } from 'wagmi/chains'
+import { LOCAL_CONFIG } from './localConfig'
 
 /**
  * @notice Master token registry for the platform
@@ -12,6 +13,23 @@ import { polygon, polygonMumbai } from 'wagmi/chains'
  *         This config shows commonly used tokens - easily extensible
  */
 export const TOKEN_REGISTRY = {
+  // Local Hardhat Network (ID: 31337)
+  31337: [
+    {
+      symbol: 'MATIC',
+      name: 'Polygon MATIC (Local)',
+      address: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
+      decimals: 18,
+      minDonation: '100000000000000000',
+      logo: '/assets/polygon.png',
+      type: 'native',
+      color: '#8247E5',
+      description: 'Local test MATIC'
+    },
+    // Populate with tokens from .env if available
+    ...(LOCAL_CONFIG.tokens || [])
+  ],
+
   [polygon.id]: [
     {
       // NATIVE TOKEN - No contract address
@@ -187,7 +205,7 @@ export const TOKEN_REGISTRY = {
       minDonation: '10000000000000000',
       logo: '/assets/aave.png',
       type: 'erc20',
-      color: '#B6509E',
+      color: '#c870ff',
       description: 'Aave governance token'
     },
   ]

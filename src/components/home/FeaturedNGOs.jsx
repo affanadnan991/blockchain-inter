@@ -131,9 +131,15 @@ NGOCard.displayName = 'NGOCard'
 const FeaturedNGOs = () => {
     const { ngos, loading: isLoading } = useNGOData()
     const { isOwner } = useIsOwner()
+    const [mounted, setMounted] = React.useState(false)
 
     // Memoize first 3 NGOs
     const featuredNGOs = useMemo(() => ngos.slice(0, 3), [ngos])
+
+    // mark mount so we don't flip owner-sensitive content during hydration
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
 
     return (
         <section className="container mx-auto px-4 py-20 bg-gradient-to-b from-gray-50 to-white">
@@ -175,7 +181,7 @@ const FeaturedNGOs = () => {
                     <div className="inline-block bg-white border border-green-100 rounded-2xl p-8 shadow-sm">
                         <h3 className="text-2xl font-bold text-gray-900 mb-2">Your NGO not listed?</h3>
                         <p className="text-gray-600 mb-4">Get verified on blockchain and join our trusted network</p>
-                        {isOwner ? (
+                        {mounted && isOwner ? (
                             <Link href="/admin/ngos" className="inline-block px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-md">
                                 Register Your NGO
                             </Link>

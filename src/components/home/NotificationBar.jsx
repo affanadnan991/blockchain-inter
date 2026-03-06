@@ -50,7 +50,9 @@ const NotificationBar = () => {
     if (!isMounted || !isVisible) return null
 
     return (
-        <div className="relative bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white overflow-hidden">
+        // Position bar BELOW the header (top-20 = ~80px, header height)
+        // so there is no overlap. z-40 keeps it above page content but below z-50 header
+        <div className="fixed top-20 left-0 w-full z-40 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white overflow-hidden">
             {/* Animated Background Pattern */}
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute inset-0" style={{
@@ -68,8 +70,8 @@ const NotificationBar = () => {
                 <FaStar className="absolute top-4 right-[35%] text-yellow-400 opacity-30 text-xs animate-pulse" style={{ animationDelay: '0.5s' }} />
             </div>
 
-            <div className="relative container mx-auto px-4 py-3">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="relative container mx-auto px-4 py-2 md:py-3">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4">
                     {/* Left: Message */}
                     <div className="flex items-center gap-3 text-center md:text-left">
                         <div className="hidden md:flex items-center justify-center w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full">

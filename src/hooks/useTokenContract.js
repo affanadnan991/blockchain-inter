@@ -1,5 +1,5 @@
 import { useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction, erc20ABI } from 'wagmi'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ethers } from 'ethers'
 import useWeb3 from './useWeb3'
 
@@ -9,6 +9,7 @@ import useWeb3 from './useWeb3'
 export const useTokenContract = (tokenAddress) => {
     const { address, isConnected } = useWeb3()
     const [txHash, setTxHash] = useState(null)
+    const approvalPromiseRef = useRef(null)
 
     /**
      * Get token balance
@@ -79,7 +80,8 @@ export const useTokenContract = (tokenAddress) => {
         isLoading: isApproving,
         isSuccess: approveSuccess,
         isError: approveError,
-        error: approveErrorMessage
+        error: approveErrorMessage,
+        reset: resetApprove
     } = useContractWrite(approveConfig)
 
     const { isLoading: isApprovingConfirming, isSuccess: isApproveConfirmed } = useWaitForTransaction({
@@ -92,28 +94,72 @@ export const useTokenContract = (tokenAddress) => {
         }
     }, [approveData])
 
+    // Resolve approval promise when confirmation succeeds
+    useEffect(() => {
+        if (isApproveConfirmed && approvalPromiseRef.current) {
+            approvalPromiseRef.current.resolve(txHash)
+            approvalPromiseRef.current = null
+        }
+    }, [isApproveConfirmed, txHash])
+
+    // Reject approval promise on error
+    useEffect(() => {
+        if (approveError && approvalPromiseRef.current) {
+            approvalPromiseRef.current.reject(approveErrorMessage || new Error('Approval failed'))
+            approvalPromiseRef.current = null
+        }
+    }, [approveError, approveErrorMessage])
+
     /**
-     * Approve spending
+     * Approve spending - returns a Promise that resolves when confirmed
      */
     const approve = async (spender, amount, tokenDecimals) => {
-        if (!approveWrite || !spender) return
+        if (!approveWrite || !spender) {
+            throw new Error('Cannot approve: spender or approveWrite is not available')
+        }
+
+        // Reset previous state
+        resetApprove()
 
         const amountInWei = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
 
+        // Create a promise that will resolve when approval is confirmed
+        const approvalPromise = new Promise((resolve, reject) => {
+            approvalPromiseRef.current = { resolve, reject }
+        })
+
+        // Start the approval transaction
         approveWrite({
             args: [spender, amountInWei],
         })
+
+        // Wait for confirmation
+        return approvalPromise
     }
 
     /**
      * Approve unlimited (max uint256)
      */
     const approveUnlimited = async (spender) => {
-        if (!approveWrite || !spender) return
+        if (!approveWrite || !spender) {
+            throw new Error('Cannot approve: spender or approveWrite is not available')
+        }
 
+        // Reset previous state
+        resetApprove()
+
+        // Create a promise that will resolve when approval is confirmed
+        const approvalPromise = new Promise((resolve, reject) => {
+            approvalPromiseRef.current = { resolve, reject }
+        })
+
+        // Start the approval transaction
         approveWrite({
             args: [spender, ethers.constants.MaxUint256],
         })
+
+        // Wait for confirmation
+        return approvalPromise
     }
 
     /**

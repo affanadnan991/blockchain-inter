@@ -57,25 +57,37 @@ export function useMultipleTokenBalances(tokens = [], chainId = null, enabled = 
                   error: null
                 }
               } else {
-                // ERC20 token
-                const balance = await readContract(wagmiConfig, {
-                  address: token.address,
-                  abi: ERC20_ABI,
-                  functionName: 'balanceOf',
-                  args: [address],
-                  chainId: currentChainId,
-                })
+                // ERC20 token - check if contract exists first
+                try {
+                  const balance = await readContract(wagmiConfig, {
+                    address: token.address,
+                    abi: ERC20_ABI,
+                    functionName: 'balanceOf',
+                    args: [address],
+                    chainId: currentChainId,
+                  })
 
-                // Format balance based on decimals
-                const decimals = token.decimals || 18
-                const formatted = Number(balance) / Math.pow(10, decimals)
+                  // Format balance based on decimals
+                  const decimals = token.decimals || 18
+                  const formatted = Number(balance) / Math.pow(10, decimals)
 
-                balanceMap[token.symbol] = {
-                  raw: balance.toString(),
-                  formatted: formatted.toFixed(6),
-                  symbol: token.symbol,
-                  decimals: decimals,
-                  error: null
+                  balanceMap[token.symbol] = {
+                    raw: balance.toString(),
+                    formatted: formatted.toFixed(6),
+                    symbol: token.symbol,
+                    decimals: decimals,
+                    error: null
+                  }
+                } catch (contractError) {
+                  // Contract doesn't exist or call failed
+                  console.warn(`Token ${token.symbol} not available on this network:`, contractError.message)
+                  balanceMap[token.symbol] = {
+                    raw: '0',
+                    formatted: '0.00',
+                    symbol: token.symbol,
+                    decimals: token.decimals || 18,
+                    error: 'Token not available on this network'
+                  }
                 }
               }
             } catch (err) {

@@ -89,22 +89,23 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
                     setTxStep('approving')
                     toast.loading('Approving token spending...', { id: 'approve' })
 
-                    await approve(
-                        contractAddress,
-                        amountNum,
-                        selectedToken.decimals
-                    )
-
-                    // Wait for approval confirmation
-                    if (!isApproveConfirmed) {
-                        toast.error('Approval failed', { id: 'approve' })
+                    try {
+                        // Wait for approval to complete (this now returns a promise)
+                        const approveTx = await approve(
+                            contractAddress,
+                            amountNum,
+                            selectedToken.decimals
+                        )
+                        
+                        toast.success('Token approved!', { id: 'approve' })
+                        setTxHash(approveTx)
+                    } catch (approvalError) {
+                        console.error('Approval error:', approvalError)
+                        toast.error('Token approval failed', { id: 'approve' })
                         setTxStatus('error')
-                        setTxError({ message: 'Token approval was not confirmed' })
+                        setTxError({ message: approvalError.message || 'Token approval was not confirmed' })
                         return
                     }
-
-                    toast.success('Token approved!', { id: 'approve' })
-                    setTxHash(approveTxHash)
                 }
             }
 
@@ -141,33 +142,93 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
         }
     }
 
-    // Monitor transaction status
+    // Monitor transaction status - improved tracking
     useEffect(() => {
-        if (maticSuccess || ngoSuccess || tokenSuccess) {
+        if (maticSuccess) {
+            console.log('MATIC donation successful')
             setTxStatus('success')
             setTxStep('success')
             toast.success('Donation successful! 🎉', { id: 'donate' })
-
-            // Reset form
-            setAmount('')
-            setMessage('')
+            setTimeout(() => {
+                // Reset form after 2 seconds
+                setAmount('')
+                setMessage('')
+            }, 2000)
         }
-    }, [maticSuccess, ngoSuccess, tokenSuccess])
+    }, [maticSuccess])
 
+    useEffect(() => {
+        if (ngoSuccess) {
+            console.log('NGO donation successful')
+            setTxStatus('success')
+            setTxStep('success')
+            toast.success('Donation successful! 🎉', { id: 'donate' })
+            setTimeout(() => {
+                // Reset form after 2 seconds
+                setAmount('')
+                setMessage('')
+            }, 2000)
+        }
+    }, [ngoSuccess])
+
+    useEffect(() => {
+        if (tokenSuccess) {
+            console.log('Token donation successful')
+            setTxStatus('success')
+            setTxStep('success')
+            toast.success('Donation successful! 🎉', { id: 'donate' })
+            setTimeout(() => {
+                // Reset form after 2 seconds
+                setAmount('')
+                setMessage('')
+            }, 2000)
+        }
+    }, [tokenSuccess])
+
+    // Monitor errors separately
+    useEffect(() => {
+        if (maticError) {
+            console.error('MATIC donation error:', maticError)
+            setTxStatus('error')
+            setTxError(maticError)
+            toast.error(maticError.message || 'Transaction failed', { id: 'donate' })
+        }
+    }, [maticError])
+
+    useEffect(() => {
+        if (ngoError) {
+            console.error('NGO donation error:', ngoError)
+            setTxStatus('error')
+            setTxError(ngoError)
+            toast.error(ngoError.message || 'Transaction failed', { id: 'donate' })
+        }
+    }, [ngoError])
+
+    useEffect(() => {
+        if (tokenError) {
+            console.error('Token donation error:', tokenError)
+            setTxStatus('error')
+            setTxError(tokenError)
+            toast.error(tokenError.message || 'Transaction failed', { id: 'donate' })
+        }
+    }, [tokenError])
+
+    // Monitor approval errors
+    useEffect(() => {
+        if (approveError) {
+            console.error('Approval error:', approveError)
+            setTxStatus('error')
+            setTxError(approveError)
+            toast.error(approveError.message || 'Approval failed', { id: 'approve' })
+        }
+    }, [approveError])
+
+    // Monitor transaction hashes
     useEffect(() => {
         if (maticHash) setTxHash(maticHash)
         if (ngoHash) setTxHash(ngoHash)
         if (tokenHash) setTxHash(tokenHash)
     }, [maticHash, ngoHash, tokenHash])
-
-    useEffect(() => {
-        if (maticError || ngoError || tokenError || approveError) {
-            const error = maticError || ngoError || tokenError || approveError
-            setTxStatus('error')
-            setTxError(error)
-            toast.error(error.message || 'Transaction failed', { id: 'donate' })
-        }
-    }, [maticError, ngoError, tokenError, approveError])
 
     const isLoading = maticLoading || ngoLoading || tokenLoading || isApproving
 

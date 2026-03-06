@@ -32,6 +32,13 @@ export default function TokenManagement() {
 
     const handleWhitelist = async (e) => {
         e.preventDefault()
+
+        if (!newToken.address) {
+            // simple guard to avoid the error seen in the screenshot
+            alert('Please enter a token address before whitelisting')
+            return
+        }
+
         try {
             await whitelistToken(newToken.address, true)
             await setTokenMinDonation(newToken.address, newToken.minAmount)
@@ -104,7 +111,7 @@ export default function TokenManagement() {
                                     <div>
                                         <div className="font-bold text-gray-900">{token.name}</div>
                                         <div className="text-xs font-mono text-gray-400">{token.symbol}</div>
-                                        <div className="text-xs text-gray-500">Min: {formatTokenAmount(token.minDonation, token.decimals, 2)}</div>
+                                        <div className="text-xs text-gray-500">Min: {formatTokenAmount(token.minDonation, token.decimals, 1)}</div>
                                     </div>
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-2">

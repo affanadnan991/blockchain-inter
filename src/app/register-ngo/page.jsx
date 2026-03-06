@@ -15,10 +15,26 @@ export default function RegisterNGOPage() {
         mission: ''
     })
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        // In a real app, this would send an email or store in a DB for admins to review
-        setSubmitted(true)
+        try {
+            // send application to a simple API endpoint so administrators can see it
+            const res = await fetch('/api/ngo-applications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+
+            if (!res.ok) {
+                throw new Error('Server rejected the application')
+            }
+
+            setSubmitted(true)
+        } catch (err) {
+            console.error('failed to submit NGO application', err)
+            // you could show a toast here, add react-hot-toast if needed
+            alert('Unable to send application – try again later.')
+        }
     }
 
     if (submitted) {

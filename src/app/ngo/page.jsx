@@ -133,7 +133,7 @@ export default function NGOPortalPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 pt-32 pb-20">
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 pt-5 pb-20">
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
           {/* Hero Section */}
