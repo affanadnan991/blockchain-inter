@@ -5,7 +5,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout';
 import { useNGODashboard } from '../../../hooks/useNGODashboard';
 import { useAccount } from 'wagmi';
 import useWeb3 from '../../../hooks/useWeb3';
-import { FaChartLine, FaTrendingUp, FaUsers, FaCoins, FaCalendarAlt } from 'react-icons/fa';
+import { FaChartLine, FaArrowUp, FaUsers, FaCoins, FaCalendarAlt } from 'react-icons/fa';
 
 export default function AnalyticsPage() {
     const { isConnected } = useAccount();
@@ -58,7 +58,7 @@ export default function AnalyticsPage() {
             title: 'Avg per Withdrawal',
             value: avgWithdrawalAmount,
             unit: 'MATIC',
-            icon: FaTrendingUp,
+            icon: FaArrowUp,
             color: 'from-purple-500 to-purple-600'
         },
         {

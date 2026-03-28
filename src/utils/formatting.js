@@ -3,3 +3,6 @@
  * This file exists for backward compatibility with imports using '@/utils/formatting'
  */
 export * from './formatters'
+
+// Alias for backward compatibility
+export { shortenAddress as formatAddress } from './formatters'

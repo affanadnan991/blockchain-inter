@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useAccount } from 'wagmi'
 import { 
   FaUserShield, 
   FaChartBar, 
@@ -15,7 +15,7 @@ import {
 import NGOManagement from '@/components/admin/NGOManagement'
 import FeeManagement from '@/components/admin/FeeManagement'
 import EmergencyControls from '@/components/admin/EmergencyControls'
-import { formatAddress } from '@/utils/formatting'
+import { shortenAddress } from '@/utils/formatting'
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -27,7 +27,7 @@ export default function AdminPage() {
     platformFees: 0
   })
   
-  const { address, isConnected } = useSelector((state) => state.web3)
+  const { address, isConnected } = useAccount()
 
   useEffect(() => {
     // Check if connected address is admin
@@ -81,7 +81,7 @@ export default function AdminPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Admin Access Required</h2>
           <p className="text-gray-600 mb-6">
-            Your address ({formatAddress(address)}) does not have admin privileges.
+            Your address ({shortenAddress(address)}) does not have admin privileges.
           </p>
           <p className="text-sm text-gray-500">
             Contact platform administrator for access.
@@ -104,7 +104,7 @@ export default function AdminPage() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
                 <p className="text-gray-600">
-                  Admin: {formatAddress(address)}
+                  Admin: {shortenAddress(address)}
                 </p>
               </div>
             </div>

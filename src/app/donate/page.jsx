@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useChainId } from 'wagmi'
 import DonateForm from '../../components/donate/DonateForm'
@@ -8,12 +8,11 @@ import { useRegisteredNGOs } from '../../hooks/useContractQuery'
 import { useDonationContract } from '../../hooks/useDonationContract'
 import { TOKEN_REGISTRY } from '../../utils/tokenConfig'
 
-export default function DonatePage() {
+function DonateContent() {
   const { ngos, loading: ngosLoading } = useRegisteredNGOs()
   const { platformFeePercent } = useDonationContract()
   const searchParams = useSearchParams()
   const chainId = useChainId()
-  const [ngoOptions, setNgoOptions] = useState([])
 
   // Get token from query params
   const tokenFromQuery = useMemo(() => {
@@ -25,9 +24,23 @@ export default function DonatePage() {
   }, [searchParams, chainId])
 
   // Transform NGO data to component format
-  useEffect(() => {
-    if (ngos && ngos.length > 0) {
-      const transformed = ngos.map((ngo) => ({
+  const ngoOptions = useMemo(() => {
+    const generalPool = {
+      id: 'general-pool',
+      name: 'General Pool',
+      description: 'Donate to the general pool - funds will be allocated by administrators',
+      category: 'General',
+      logo: '/ngo-images/general-pool.png',
+      address: '0x0000000000000000000000000000000000000000',
+      trustScore: 100,
+      isActive: true,
+    }
+
+    if (!ngos || ngos.length === 0) return [generalPool]
+
+    return [
+      generalPool,
+      ...ngos.map((ngo) => ({
         id: ngo.address,
         name: ngo.name || `NGO ${ngo.address.substring(0, 10)}...`,
         description: ngo.description || 'Blockchain-verified organization',
@@ -37,21 +50,7 @@ export default function DonatePage() {
         trustScore: ngo.trustScore || 90,
         isActive: ngo.isActive,
       }))
-
-      // Add general pool option
-      transformed.unshift({
-        id: 'general-pool',
-        name: 'General Pool',
-        description: 'Donate to the general pool - funds will be allocated by administrators',
-        category: 'General',
-        logo: '/ngo-images/general-pool.png',
-        address: '0x0000000000000000000000000000000000000000',
-        trustScore: 100,
-        isActive: true,
-      })
-
-      setNgoOptions(transformed)
-    }
+    ]
   }, [ngos])
 
   return (
@@ -90,6 +89,18 @@ export default function DonatePage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function DonatePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    }>
+      <DonateContent />
+    </Suspense>
   )
 }
 

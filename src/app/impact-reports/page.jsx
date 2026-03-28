@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { FaArrowLeft, FaBarChart, FaChartLine, FaCoins, FaCheckCircle } from 'react-icons/fa'
+import { FaArrowLeft, FaChartBar, FaChartLine, FaCoins, FaCheckCircle } from 'react-icons/fa'
 
 export default function ImpactReportsPage() {
   const reports = [
@@ -131,7 +131,7 @@ export default function ImpactReportsPage() {
 
           {/* Download CTA */}
           <div className="text-center bg-white rounded-2xl p-12 border border-gray-100 shadow-lg">
-            <FaBarChart size={48} className="mx-auto text-green-600 mb-6" />
+            <FaChartBar size={48} className="mx-auto text-green-600 mb-6" />
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Full Audit Reports Available</h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
               Download complete audit reports, smart contract verifications, and detailed transaction breakdowns.
