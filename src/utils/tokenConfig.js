@@ -20,7 +20,7 @@ export const TOKEN_REGISTRY = {
       name: 'Polygon MATIC (Local)',
       address: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
       decimals: 18,
-      minDonation: '100000000000000000',
+      minDonation: '1000000000000000000', // 1 MATIC (contract minimum)
       logo: '/assets/polygon.png',
       type: 'native',
       color: '#8247E5',
@@ -37,7 +37,7 @@ export const TOKEN_REGISTRY = {
       name: 'Polygon Native',
       address: '0x0000000000000000000000000000000000000000',
       decimals: 18,
-      minDonation: '100000000000000000', // 0.1 MATIC
+      minDonation: '1000000000000000000', // 1 MATIC (contract minimum)
       logo: '/assets/polygon.png',
       type: 'native',
       color: '#8247E5',
@@ -110,7 +110,7 @@ export const TOKEN_REGISTRY = {
       name: 'Polygon Native (Testnet)',
       address: '0x0000000000000000000000000000000000000000',
       decimals: 18,
-      minDonation: '100000000000000000',
+      minDonation: '1000000000000000000', // 1 MATIC (contract minimum)
       logo: '/assets/polygon.png',
       type: 'native',
       color: '#8247E5',
@@ -147,7 +147,7 @@ export const TOKEN_REGISTRY = {
       name: 'Ethereum Native',
       address: '0x0000000000000000000000000000000000000000',
       decimals: 18,
-      minDonation: '100000000000000000', // 0.1 ETH
+      minDonation: '1000000000000000000', // 1 ETH (contract minimum)
       logo: '/assets/eth.png',
       type: 'native',
       color: '#627EEA',

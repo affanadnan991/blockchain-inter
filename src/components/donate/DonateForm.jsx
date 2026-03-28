@@ -12,6 +12,7 @@ import NGOSelector from './NGOSelector'
 import FeeDisplay from './FeeDisplay'
 import TransactionModal from './TransactionModal'
 import WalletConnect from '../wallet/WalletConnect'
+import ImpactSlider from './ImpactSlider'
 import { parseEther, formatTokenAmount } from '../../utils/formatters'
 
 /**
@@ -47,7 +48,7 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
     const { donate: donateToken, isLoading: tokenLoading, isSuccess: tokenSuccess, txHash: tokenHash, error: tokenError } = useDonateToken()
 
     // Token approval hook (only for ERC20)
-    const isNativeToken = selectedToken?.address === '0x0000000000000000000000000000000000000000'
+    const isNativeToken = selectedToken?.type === 'native'
     const {
         approve,
         needsApproval,
@@ -57,24 +58,32 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
         approveError
     } = useTokenContract(!isNativeToken ? selectedToken?.address : null)
 
-    // Validation
+    // Validation - enforce minDonation to match contract (avoids revert)
+    const amountNum = parseFloat(amount) || 0
+    const minDonation = selectedToken?.minDonation ? parseFloat(formatTokenAmount(selectedToken.minDonation, selectedToken.decimals, 6)) : 0
+    const meetsMinDonation = minDonation === 0 || amountNum >= minDonation
+
     const isValid =
         amount &&
-        parseFloat(amount) > 0 &&
+        amountNum > 0 &&
         selectedToken &&
         isConnected &&
-        !isWrongNetwork
+        !isWrongNetwork &&
+        meetsMinDonation
 
     // Handle donation submission
     const handleDonate = async () => {
         if (!isValid) return
+        if (!meetsMinDonation) {
+            toast.error(`Minimum donation is ${minDonation} ${selectedToken?.symbol}`)
+            return
+        }
 
         try {
             setIsModalOpen(true)
             setTxStatus('pending')
             setTxError(null)
 
-            const amountNum = parseFloat(amount)
             const isGeneralPool = !selectedNGO || selectedNGO.id === 'general-pool'
 
             // For ERC20 tokens, check if approval is needed
@@ -311,6 +320,9 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
                             </p>
                         )}
                     </div>
+
+                    {/* Gamified Tangible Impact Display */}
+                    <ImpactSlider amount={amount} targetAmountBase={selectedToken?.symbol || ''} />
 
                     {/* Fee Display */}
                     {amount && selectedToken && (

@@ -5,7 +5,7 @@ import { usePublicClient, useWalletClient, useAccount } from 'wagmi'
 import { getContractAddress } from '../utils/web3Config'
 import DonationPlatformABI from '../contracts/abis/DonationPlatform.json'
 import { toast } from 'react-hot-toast'
-import { parseEther, keccak256, toHex, encodePacked } from 'viem'
+import { parseEther, parseUnits, keccak256, toHex, stringToHex, encodePacked } from 'viem'
 
 export const useAdmin = () => {
     const { address } = useAccount()
@@ -54,7 +54,8 @@ export const useAdmin = () => {
 
     // NGO Management
     const registerNGO = async (ngoAddr, name, approvers, minApprovals) => {
-        const nameHash = keccak256(toHex(name))
+        // Fixed Bug 13: toHex string converts string to hex number safely use stringToHex
+        const nameHash = keccak256(stringToHex(name))
         return executeAdminTx('registerNGO', [ngoAddr, nameHash, approvers, minApprovals], 'NGO Registered Successfully!')
     }
 
@@ -70,31 +71,15 @@ export const useAdmin = () => {
         return executeAdminTx('manageNGOApprover', [ngoAddr, approver, status], 'Approver Status Updated')
     }
 
-    const pauseNGOWithdrawals = async (ngoAddr, paused) => {
-        return executeAdminTx('pauseNGOWithdrawals', [ngoAddr, paused], `Withdrawals ${paused ? 'Paused' : 'Unpaused'}`)
-    }
-
     // Token & Fee Management
     const whitelistToken = async (tokenAddr, status) => {
         return executeAdminTx('whitelistToken', [tokenAddr, status], `Token ${status ? 'Whitelisted' : 'Removed'}`)
     }
 
     const setTokenMinDonation = async (tokenAddr, minAmount, decimals = 18) => {
-        // convert human amount to raw depending on decimals
-        let amountStr = minAmount.toString()
-        // use parseEther for 18 decimals or manual for others
-        let amount
-        if (decimals === 18) {
-            amount = parseEther(amountStr)
-        } else {
-            const factor = BigInt(10) ** BigInt(decimals)
-            amount = BigInt(Math.floor(parseFloat(amountStr) * Math.pow(10, decimals)))
-        }
+        // Fixed Bug 15: Use proper parseUnits to support tokens like USDT with 6 decimals
+        const amount = parseUnits(minAmount.toString(), decimals)
         return executeAdminTx('setTokenMinDonation', [tokenAddr, amount], 'Minimum Donation Updated')
-    }
-
-    const setFeeOnTransferBlacklist = async (tokenAddr, status) => {
-        return executeAdminTx('setFeeOnTransferBlacklist', [tokenAddr, status], `Fee-on-transfer ${status ? 'blocked' : 'unblocked'}`)
     }
 
     const updatePlatformFee = async (newPercent) => {
@@ -119,15 +104,22 @@ export const useAdmin = () => {
         return executeAdminTx('allocateGeneralPoolFunds', [ngo, token, amount], 'Funds Allocated from General Pool')
     }
 
+    // Fee Management
+    const withdrawCollectedFees = async (token, amount) => {
+        return executeAdminTx(
+            'withdrawCollectedFees',
+            [token, amount],
+            `✅ ${amount} fees withdrawn to collector!`
+        )
+    }
+
     return {
         registerNGO,
         updateNGOStatus,
         updateMinApprovals,
         manageNGOApprover,
-        pauseNGOWithdrawals,
         whitelistToken,
         setTokenMinDonation,
-        setFeeOnTransferBlacklist,
         updatePlatformFee,
         updateFeeCollector,
         pause,
@@ -135,6 +127,7 @@ export const useAdmin = () => {
         activateEmergencyMode,
         deactivateEmergencyMode,
         allocateGeneralPoolFunds,
+        withdrawCollectedFees,
         isLoading
     }
 }

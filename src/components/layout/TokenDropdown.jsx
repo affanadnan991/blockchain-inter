@@ -36,11 +36,10 @@ export default function TokenDropdown() {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
-          isOpen
+        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${isOpen
             ? 'bg-green-600 text-white shadow-lg'
             : 'bg-green-50 text-green-700 border border-green-200 hover:border-green-400 group-hover:bg-green-100'
-        }`}
+          }`}
       >
         <span>Quick Donate</span>
         <FaChevronDown
@@ -83,13 +82,12 @@ export default function TokenDropdown() {
 
                   {/* Type Badge */}
                   <div className="flex-shrink-0">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      token.type === 'native'
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${token.type === 'native'
                         ? 'bg-purple-100 text-purple-700'
                         : token.type === 'stablecoin'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}>
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
                       {token.type === 'native' ? '⚡ Native' : token.type === 'stablecoin' ? '💵 Stable' : 'Token'}
                     </span>
                   </div>

@@ -1,9 +1,9 @@
-import { useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
-import { useEffect, useState } from 'react'
+import { useContractRead, usePublicClient, useWalletClient } from 'wagmi'
+import { useEffect, useState, useCallback } from 'react'
 import { ethers } from 'ethers'
 import DonationPlatformABI from '../contracts/abis/DonationPlatform.json'
 import { getContractAddress } from '../utils/web3Config'
-import { createMessageHash, createPurposeHash } from '../utils/formatters'
+import { createMessageHash } from '../utils/formatters'
 import useWeb3 from './useWeb3'
 
 /**
@@ -11,6 +11,7 @@ import useWeb3 from './useWeb3'
  */
 export const useDonationContract = () => {
     const { chainId, isConnected } = useWeb3()
+    const publicClient = usePublicClient()
     const contractAddress = getContractAddress(chainId)
     if (!contractAddress) {
         console.warn('useDonationContract: no contract configured for chain', chainId)
@@ -36,33 +37,31 @@ export const useDonationContract = () => {
     })
 
     /**
-     * Get NGO Balance
+     * Get NGO Balance (uses readContract for dynamic args)
      */
-    const getNGOBalance = async (ngoAddress, tokenAddress) => {
-        if (!isConnected || !ngoAddress) return '0'
-
+    const getNGOBalance = useCallback(async (ngoAddress, tokenAddress) => {
+        if (!publicClient || !contractAddress || !ngoAddress) return '0'
         try {
-            const { data } = await useContractRead({
+            const data = await publicClient.readContract({
                 address: contractAddress,
                 abi: DonationPlatformABI,
                 functionName: 'getNGOBalance',
-                args: [ngoAddress, tokenAddress],
+                args: [ngoAddress, tokenAddress ?? '0x0000000000000000000000000000000000000000'],
             })
-            return data
+            return data?.toString() ?? '0'
         } catch (error) {
             console.error('Error fetching NGO balance:', error)
             return '0'
         }
-    }
+    }, [publicClient, contractAddress])
 
     /**
-     * Get NGO Info
+     * Get NGO Info (uses readContract for dynamic args)
      */
-    const getNGOInfo = async (ngoAddress) => {
-        if (!isConnected || !ngoAddress) return null
-
+    const getNGOInfo = useCallback(async (ngoAddress) => {
+        if (!publicClient || !contractAddress || !ngoAddress) return null
         try {
-            const { data } = await useContractRead({
+            const data = await publicClient.readContract({
                 address: contractAddress,
                 abi: DonationPlatformABI,
                 functionName: 'getNGOInfo',
@@ -73,12 +72,12 @@ export const useDonationContract = () => {
             console.error('Error fetching NGO info:', error)
             return null
         }
-    }
+    }, [publicClient, contractAddress])
 
     return {
         contractAddress,
         platformStats,
-        platformFeePercent: platformFeePercent || 2,
+        platformFeePercent: platformFeePercent ?? 2,
         statsLoading,
         refetchStats,
         getNGOBalance,
@@ -90,153 +89,171 @@ export const useDonationContract = () => {
  * Hook for native (MATIC) donations
  */
 export const useDonateMATIC = () => {
-    const { chainId } = useWeb3()
+    const { chainId, address } = useWeb3()
     const contractAddress = getContractAddress(chainId)
+    const publicClient = usePublicClient()
+    const { data: walletClient } = useWalletClient()
+
     if (!contractAddress) {
         console.warn('useDonateMATIC: no contract configured for chain', chainId)
     }
+
     const [txHash, setTxHash] = useState(null)
-
-    const { config } = usePrepareContractWrite({
-        address: contractAddress,
-        abi: DonationPlatformABI,
-        functionName: 'donateNative',
-        enabled: false,
-    })
-
-    const { write, data, isLoading: isWriting, isSuccess, isError, error } = useContractWrite(config)
-
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransaction({
-        hash: data?.hash,
-    })
-
-    useEffect(() => {
-        if (data?.hash) {
-            setTxHash(data.hash)
-        }
-    }, [data])
+    const [isLoading, setIsLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
+    const [isError, setIsError] = useState(false)
+    const [error, setError] = useState(null)
 
     const donate = async (amount, message = '') => {
-        if (!write) return
+        if (!walletClient || !contractAddress) return
 
-        const messageHash = createMessageHash(message)
+        try {
+            setIsLoading(true)
+            setIsSuccess(false)
+            setIsError(false)
+            setError(null)
+            setTxHash(null)
 
-        write({
-            args: [messageHash],
-            value: ethers.utils.parseEther(amount),
-        })
+            const messageHash = createMessageHash(message)
+
+            const { request } = await publicClient.simulateContract({
+                account: address,
+                address: contractAddress,
+                abi: DonationPlatformABI,
+                functionName: 'donateNative',
+                args: [messageHash],
+                value: ethers.utils.parseEther(amount),
+            })
+
+            const hash = await walletClient.writeContract(request)
+            setTxHash(hash)
+
+            await publicClient.waitForTransactionReceipt({ hash })
+            setIsSuccess(true)
+        } catch (err) {
+            console.error('Error in donateMATIC:', err)
+            setIsError(true)
+            setError(err)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
-    return {
-        donate,
-        isLoading: isWriting || isConfirming,
-        isSuccess: isConfirmed,
-        isError,
-        error,
-        txHash,
-    }
+    return { donate, isLoading, isSuccess, isError, error, txHash }
 }
 
 /**
  * Hook for donating to specific NGO (native token)
  */
 export const useDonateToNGO = () => {
-    const { chainId } = useWeb3()
+    const { chainId, address } = useWeb3()
     const contractAddress = getContractAddress(chainId)
+    const publicClient = usePublicClient()
+    const { data: walletClient } = useWalletClient()
+
     if (!contractAddress) {
         console.warn('useDonateToNGO: no contract configured for chain', chainId)
     }
+
     const [txHash, setTxHash] = useState(null)
-
-    const { config } = usePrepareContractWrite({
-        address: contractAddress,
-        abi: DonationPlatformABI,
-        functionName: 'donateToNGO',
-        enabled: false,
-    })
-
-    const { write, data, isLoading: isWriting, isSuccess, isError, error } = useContractWrite(config)
-
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransaction({
-        hash: data?.hash,
-    })
-
-    useEffect(() => {
-        if (data?.hash) {
-            setTxHash(data.hash)
-        }
-    }, [data])
+    const [isLoading, setIsLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
+    const [isError, setIsError] = useState(false)
+    const [error, setError] = useState(null)
 
     const donate = async (ngoAddress, amount, message = '') => {
-        if (!write || !ngoAddress) return
+        if (!walletClient || !contractAddress || !ngoAddress) return
 
-        const messageHash = createMessageHash(message)
+        try {
+            setIsLoading(true)
+            setIsSuccess(false)
+            setIsError(false)
+            setError(null)
+            setTxHash(null)
 
-        write({
-            args: [ngoAddress, messageHash],
-            value: ethers.utils.parseEther(amount),
-        })
+            const messageHash = createMessageHash(message)
+
+            const { request } = await publicClient.simulateContract({
+                account: address,
+                address: contractAddress,
+                abi: DonationPlatformABI,
+                functionName: 'donateToNGO',
+                args: [ngoAddress, messageHash],
+                value: ethers.utils.parseEther(amount),
+            })
+
+            const hash = await walletClient.writeContract(request)
+            setTxHash(hash)
+
+            await publicClient.waitForTransactionReceipt({ hash })
+            setIsSuccess(true)
+        } catch (err) {
+            console.error('Error in donateToNGO:', err)
+            setIsError(true)
+            setError(err)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
-    return {
-        donate,
-        isLoading: isWriting || isConfirming,
-        isSuccess: isConfirmed,
-        isError,
-        error,
-        txHash,
-    }
+    return { donate, isLoading, isSuccess, isError, error, txHash }
 }
 
 /**
  * Hook for ERC20 token donations
  */
 export const useDonateToken = () => {
-    const { chainId } = useWeb3()
+    const { chainId, address } = useWeb3()
     const contractAddress = getContractAddress(chainId)
+    const publicClient = usePublicClient()
+    const { data: walletClient } = useWalletClient()
+
     if (!contractAddress) {
         console.warn('useDonateToken: no contract configured for chain', chainId)
     }
+
     const [txHash, setTxHash] = useState(null)
-
-    const { config } = usePrepareContractWrite({
-        address: contractAddress,
-        abi: DonationPlatformABI,
-        functionName: 'donateToken',
-        enabled: false,
-    })
-
-    const { write, data, isLoading: isWriting, isSuccess, isError, error } = useContractWrite(config)
-
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransaction({
-        hash: data?.hash,
-    })
-
-    useEffect(() => {
-        if (data?.hash) {
-            setTxHash(data.hash)
-        }
-    }, [data])
+    const [isLoading, setIsLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
+    const [isError, setIsError] = useState(false)
+    const [error, setError] = useState(null)
 
     const donate = async (tokenAddress, amount, decimals, designatedNGO = ethers.constants.AddressZero, message = '') => {
-        if (!write || !tokenAddress) return
+        if (!walletClient || !contractAddress || !tokenAddress) return
 
-        const messageHash = createMessageHash(message)
-        const amountInWei = ethers.utils.parseUnits(amount.toString(), decimals)
+        try {
+            setIsLoading(true)
+            setIsSuccess(false)
+            setIsError(false)
+            setError(null)
+            setTxHash(null)
 
-        write({
-            args: [tokenAddress, amountInWei, designatedNGO, messageHash],
-        })
+            const messageHash = createMessageHash(message)
+            const amountInWei = ethers.utils.parseUnits(amount.toString(), decimals)
+
+            const { request } = await publicClient.simulateContract({
+                account: address,
+                address: contractAddress,
+                abi: DonationPlatformABI,
+                functionName: 'donateToken',
+                args: [tokenAddress, amountInWei, designatedNGO, messageHash],
+            })
+
+            const hash = await walletClient.writeContract(request)
+            setTxHash(hash)
+
+            await publicClient.waitForTransactionReceipt({ hash })
+            setIsSuccess(true)
+        } catch (err) {
+            console.error('Error in donateToken:', err)
+            setIsError(true)
+            setError(err)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
-    return {
-        donate,
-        isLoading: isWriting || isConfirming,
-        isSuccess: isConfirmed,
-        isError,
-        error,
-        txHash,
-    }
+    return { donate, isLoading, isSuccess, isError, error, txHash }
 }
 
 export default useDonationContract

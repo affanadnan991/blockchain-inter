@@ -1,5 +1,5 @@
-import { useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction, erc20ABI } from 'wagmi'
-import { useState, useEffect, useRef } from 'react'
+import { useContractRead, usePublicClient, useWalletClient, erc20ABI } from 'wagmi'
+import { useState } from 'react'
 import { ethers } from 'ethers'
 import useWeb3 from './useWeb3'
 
@@ -9,7 +9,12 @@ import useWeb3 from './useWeb3'
 export const useTokenContract = (tokenAddress) => {
     const { address, isConnected } = useWeb3()
     const [txHash, setTxHash] = useState(null)
-    const approvalPromiseRef = useRef(null)
+    const [isApproving, setIsApproving] = useState(false)
+    const [isApproveConfirmed, setIsApproveConfirmed] = useState(false)
+    const [approveError, setApproveError] = useState(false)
+    const [approveErrorMessage, setApproveErrorMessage] = useState(null)
+    const publicClient = usePublicClient()
+    const { data: walletClient } = useWalletClient()
 
     /**
      * Get token balance
@@ -65,101 +70,85 @@ export const useTokenContract = (tokenAddress) => {
     })
 
     /**
-     * Approve token spending
-     */
-    const { config: approveConfig } = usePrepareContractWrite({
-        address: tokenAddress,
-        abi: erc20ABI,
-        functionName: 'approve',
-        enabled: false,
-    })
-
-    const {
-        write: approveWrite,
-        data: approveData,
-        isLoading: isApproving,
-        isSuccess: approveSuccess,
-        isError: approveError,
-        error: approveErrorMessage,
-        reset: resetApprove
-    } = useContractWrite(approveConfig)
-
-    const { isLoading: isApprovingConfirming, isSuccess: isApproveConfirmed } = useWaitForTransaction({
-        hash: approveData?.hash,
-    })
-
-    useEffect(() => {
-        if (approveData?.hash) {
-            setTxHash(approveData.hash)
-        }
-    }, [approveData])
-
-    // Resolve approval promise when confirmation succeeds
-    useEffect(() => {
-        if (isApproveConfirmed && approvalPromiseRef.current) {
-            approvalPromiseRef.current.resolve(txHash)
-            approvalPromiseRef.current = null
-        }
-    }, [isApproveConfirmed, txHash])
-
-    // Reject approval promise on error
-    useEffect(() => {
-        if (approveError && approvalPromiseRef.current) {
-            approvalPromiseRef.current.reject(approveErrorMessage || new Error('Approval failed'))
-            approvalPromiseRef.current = null
-        }
-    }, [approveError, approveErrorMessage])
-
-    /**
      * Approve spending - returns a Promise that resolves when confirmed
      */
     const approve = async (spender, amount, tokenDecimals) => {
-        if (!approveWrite || !spender) {
-            throw new Error('Cannot approve: spender or approveWrite is not available')
+        if (!walletClient || !spender || !tokenAddress) {
+            throw new Error('Cannot approve: wallet not connected or inputs missing')
         }
 
-        // Reset previous state
-        resetApprove()
+        setIsApproving(true)
+        setIsApproveConfirmed(false)
+        setApproveError(false)
+        setApproveErrorMessage(null)
+        setTxHash(null)
 
-        const amountInWei = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
+        try {
+            const amountInWei = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
 
-        // Create a promise that will resolve when approval is confirmed
-        const approvalPromise = new Promise((resolve, reject) => {
-            approvalPromiseRef.current = { resolve, reject }
-        })
+            const { request } = await publicClient.simulateContract({
+                account: address,
+                address: tokenAddress,
+                abi: erc20ABI,
+                functionName: 'approve',
+                args: [spender, amountInWei],
+            })
 
-        // Start the approval transaction
-        approveWrite({
-            args: [spender, amountInWei],
-        })
+            const hash = await walletClient.writeContract(request)
+            setTxHash(hash)
 
-        // Wait for confirmation
-        return approvalPromise
+            await publicClient.waitForTransactionReceipt({ hash })
+
+            setIsApproveConfirmed(true)
+            return hash
+        } catch (error) {
+            console.error('Approval failed:', error)
+            setApproveError(true)
+            setApproveErrorMessage(error.shortMessage || error.message || 'Approval failed')
+            throw error
+        } finally {
+            setIsApproving(false)
+        }
     }
 
     /**
      * Approve unlimited (max uint256)
      */
     const approveUnlimited = async (spender) => {
-        if (!approveWrite || !spender) {
-            throw new Error('Cannot approve: spender or approveWrite is not available')
+        if (!walletClient || !spender || !tokenAddress) {
+            throw new Error('Cannot approve: wallet not connected or inputs missing')
         }
 
-        // Reset previous state
-        resetApprove()
+        setIsApproving(true)
+        setIsApproveConfirmed(false)
+        setApproveError(false)
+        setApproveErrorMessage(null)
+        setTxHash(null)
 
-        // Create a promise that will resolve when approval is confirmed
-        const approvalPromise = new Promise((resolve, reject) => {
-            approvalPromiseRef.current = { resolve, reject }
-        })
+        try {
+            const { request } = await publicClient.simulateContract({
+                account: address,
+                address: tokenAddress,
+                abi: erc20ABI,
+                functionName: 'approve',
+                args: [spender, ethers.constants.MaxUint256],
+            })
 
-        // Start the approval transaction
-        approveWrite({
-            args: [spender, ethers.constants.MaxUint256],
-        })
+            const hash = await walletClient.writeContract(request)
+            setTxHash(hash)
 
-        // Wait for confirmation
-        return approvalPromise
+            await publicClient.waitForTransactionReceipt({ hash })
+
+            setIsApproveConfirmed(true)
+            return hash
+        } catch (error) {
+            console.error('Approval failed:', error)
+            setApproveError(true)
+            setApproveErrorMessage(error.shortMessage || error.message || 'Approval failed')
+            throw error
+        } finally {
+            setIsApproving(false)
+        }
     }
 
     /**
@@ -202,7 +191,7 @@ export const useTokenContract = (tokenAddress) => {
         approveUnlimited,
         checkAllowance,
         needsApproval,
-        isApproving: isApproving || isApprovingConfirming,
+        isApproving,
         isApproveConfirmed,
         approveError,
         approveErrorMessage,

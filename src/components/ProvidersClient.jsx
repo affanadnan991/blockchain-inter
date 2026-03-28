@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast'
 
 /**
  * ProvidersClient
- * Client-side component to wrap the application with all necessary providers.  
+ * Client-side component to wrap the application with all necessary providers.
  */
 export default function ProvidersClient({ children }) {
   return (

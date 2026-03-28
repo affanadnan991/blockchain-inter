@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { FaCoins, FaPlus, FaMinusCircle, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa'
+import { ethers } from 'ethers'
+import { FaCoins, FaPlus, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa'
 import { useAdmin } from '@/hooks/useAdmin'
 import Button from '@/components/ui/Button'
 import useIsOwner from '../../hooks/useIsOwner'
@@ -15,7 +16,8 @@ export default function TokenManagement() {
 
     const [newToken, setNewToken] = useState({
         address: '',
-        minAmount: '1'
+        minAmount: '1',
+        decimals: 18
     })
 
     const { isOwner, isLoading: ownerLoading } = useIsOwner()
@@ -32,17 +34,18 @@ export default function TokenManagement() {
 
     const handleWhitelist = async (e) => {
         e.preventDefault()
-
         if (!newToken.address) {
-            // simple guard to avoid the error seen in the screenshot
             alert('Please enter a token address before whitelisting')
             return
         }
-
+        if (!ethers.utils.isAddress(newToken.address)) {
+            alert('Invalid token address')
+            return
+        }
         try {
             await whitelistToken(newToken.address, true)
-            await setTokenMinDonation(newToken.address, newToken.minAmount)
-            setNewToken({ address: '', minAmount: '10' })
+            await setTokenMinDonation(newToken.address, newToken.minAmount, newToken.decimals)
+            setNewToken({ address: '', minAmount: '10', decimals: 18 })
         } catch (err) { }
     }
 
@@ -83,6 +86,17 @@ export default function TokenManagement() {
                                 className="w-full px-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-green-500"
                             />
                         </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-700">Token Decimals (6 for USDC/USDT, 18 for most)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="18"
+                                value={newToken.decimals}
+                                onChange={e => setNewToken({ ...newToken, decimals: parseInt(e.target.value) || 18 })}
+                                className="w-full px-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-green-500"
+                            />
+                        </div>
                         <Button
                             type="submit"
                             isLoading={isLoading}
@@ -119,32 +133,39 @@ export default function TokenManagement() {
                                         <FaCheckCircle /> ACTIVE
                                     </div>
                                     <div className="flex flex-col sm:flex-row gap-2">
-                                        <button
-                                            className="text-xs text-red-400 hover:text-red-600 font-semibold transition-colors"
-                                            onClick={() => whitelistToken(token.address, false)}
-                                        >
-                                            Remove
-                                        </button>
-                                        <button
-                                            className="text-xs text-blue-500 hover:text-blue-600 font-semibold transition-colors"
-                                            onClick={async () => {
-                                                const input = prompt('Enter new minimum donation amount in human units (e.g. 5)')
-                                                if (input) {
-                                                    try {
-                                                        await setTokenMinDonation(token.address, input, token.decimals)
-                                                        alert('Min donation updated')
-                                                    } catch (e) {}
-                                                }
-                                            }}
-                                        >
-                                            Edit Min
-                                        </button>
-                                        <button
-                                            className="text-xs text-amber-500 hover:text-amber-600 font-semibold transition-colors"
-                                            onClick={() => setFeeOnTransferBlacklist(token.address, true)}
-                                        >
-                                            Block FOT
-                                        </button>
+                                        {token.type !== 'native' && (
+                                            <>
+                                                <button
+                                                    className="text-xs text-red-400 hover:text-red-600 font-semibold transition-colors"
+                                                    onClick={() => whitelistToken(token.address, false)}
+                                                >
+                                                    Remove
+                                                </button>
+                                                <button
+                                                    className="text-xs text-blue-500 hover:text-blue-600 font-semibold transition-colors"
+                                                    onClick={async () => {
+                                                        const input = prompt('Enter new minimum donation amount in human units (e.g. 5)')
+                                                        if (input) {
+                                                            try {
+                                                                await setTokenMinDonation(token.address, input, token.decimals)
+                                                                alert('Min donation updated')
+                                                            } catch (e) {}
+                                                        }
+                                                    }}
+                                                >
+                                                    Edit Min
+                                                </button>
+                                                <button
+                                                    className="text-xs text-amber-500 hover:text-amber-600 font-semibold transition-colors"
+                                                    onClick={() => setFeeOnTransferBlacklist(token.address, true)}
+                                                >
+                                                    Block FOT
+                                                </button>
+                                            </>
+                                        )}
+                                        {token.type === 'native' && (
+                                            <span className="text-xs text-gray-400">Native token (min set by contract)</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>

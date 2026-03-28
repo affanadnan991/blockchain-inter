@@ -343,9 +343,9 @@ contract DonationPlatform is Ownable2Step, ReentrancyGuard, Pausable {
         if (!whitelistedTokens[token])                         revert TokenNotWhitelisted();
         if (feeOnTransferBlacklist[token])                     revert FeeOnTransferTokenBlocked();
         if (designatedNGO != address(0)) {
-          if (!isRegisteredNGO[designatedNGO])                 revert NGONotFound();
-          if (!ngoRecords[designatedNGO].isActive)             revert NGOInactive();
-    }
+            if (!isRegisteredNGO[designatedNGO])                 revert NGONotFound();
+            if (!ngoRecords[designatedNGO].isActive)             revert NGOInactive();
+        }
         uint256 minDon = minTokenDonation[token];
         if (minDon > 0 && amount < minDon)                     revert BelowMinimumDonation();
 
@@ -478,6 +478,7 @@ contract DonationPlatform is Ownable2Step, ReentrancyGuard, Pausable {
             _ngoApproversCount[ngo] = cnt + 1;
         } else {
             if (!cur)                         revert NotApprover();
+            if (_minWithdrawalApprovals[ngo] > cnt - 1) revert InvalidAmount(); // minApprovals would exceed approvers
             _ngoApproversCount[ngo] = cnt - 1;
         }
 
@@ -538,7 +539,7 @@ contract DonationPlatform is Ownable2Step, ReentrancyGuard, Pausable {
         ngo.lastWithdrawal = uint64(block.timestamp);
 
         // ── Input validation ──────────────────────────────────────────────
-        // Allow empty donation arrays for simplified withdrawals (MVP phase)
+        if (donationIds.length == 0)                               revert InvalidAmount();
         if (donationIds.length > MAX_WITHDRAWAL_ITEMS)             revert MaxWithdrawalItemsExceeded();
         if (donationIds.length != withdrawalAmounts.length)        revert ArrayLengthMismatch();
 
@@ -551,12 +552,8 @@ contract DonationPlatform is Ownable2Step, ReentrancyGuard, Pausable {
         if (ngoBalances[msg.sender][token] < amount)               revert InsufficientBalance();
 
         // ── Donation validation (overflow-safe) ───────────────────────────
-        // Allow empty donation arrays for simplified withdrawals (MVP)
-        // In production, proper donation tracking should be implemented
-        if (donationIds.length > 0) {
-            uint96 total = _validateDonations(msg.sender, token, donationIds, withdrawalAmounts);
-            if (total != amount)                                   revert InvalidAmount();
-        }
+        uint96 total = _validateDonations(msg.sender, token, donationIds, withdrawalAmounts);
+        if (total != amount)                                       revert InvalidAmount();
 
         // ── Create request ────────────────────────────────────────────────
         requestId = _withdrawalRequestCount++;

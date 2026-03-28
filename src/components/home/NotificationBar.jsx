@@ -50,9 +50,7 @@ const NotificationBar = () => {
     if (!isMounted || !isVisible) return null
 
     return (
-        // Position bar BELOW the header (top-20 = ~80px, header height)
-        // so there is no overlap. z-40 keeps it above page content but below z-50 header
-        <div className="fixed top-20 left-0 w-full z-40 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white overflow-hidden">
+        <div className="relative w-full z-40 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white overflow-hidden mt-0">
             {/* Animated Background Pattern */}
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute inset-0" style={{

@@ -1,17 +1,17 @@
-import { useAccount, useContractRead, useContractWrite, useConfig, useChainId } from 'wagmi';
+import { useAccount, useContractRead, useConfig, useChainId, usePublicClient, useWalletClient } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { useState, useEffect, useMemo } from 'react';
-import { getContractAddress } from '../utils/web3Config';
-import { getSupportedTokens } from '../utils/tokenConfig';
+import { getContractAddress, getSupportedTokens } from '../utils/web3Config';
 import DonationPlatformABI from '../contracts/abis/DonationPlatform.json';
 import { toast } from 'react-hot-toast';
-import { parseUnits, formatUnits } from 'viem';
-import { ethers } from 'ethers';
+import { parseUnits, formatUnits, keccak256, stringToHex } from 'viem';
 
 export function useNGODashboard() {
     const { address, isConnected } = useAccount();
     const config = useConfig();
     const chainId = useChainId();
+    const publicClient = usePublicClient();
+    const { data: walletClient } = useWalletClient();
 
     const contractAddress = useMemo(() => getContractAddress(chainId), [chainId]);
     const supportedTokens = useMemo(() => getSupportedTokens(chainId), [chainId]);
@@ -119,47 +119,40 @@ export function useNGODashboard() {
     };
 
     // 5. Create Withdrawal Request
-    const { writeAsync: createRequestContract } = useContractWrite({
-        address: contractAddress,
-        abi: DonationPlatformABI,
-        functionName: 'createWithdrawalRequest',
-    });
+    const createRequest = async (tokenSymbol, amount, purpose, donationIds = [], withdrawalAmounts = []) => {
+        if (!walletClient || !contractAddress) {
+            throw new Error('Wallet not connected or contract address missing');
+        }
 
-    const createRequest = async (tokenSymbol, amount, purpose) => {
         setLoading(true);
         try {
             const token = supportedTokens.find(t => t.symbol === tokenSymbol);
-            if (!token) {
-                throw new Error('Token not found');
-            }
-            
             const amountWei = parseUnits(amount.toString(), token.decimals);
 
-            // Hash the purpose string
-            const purposeHash = ethers.utils.keccak256(
-                ethers.utils.toUtf8Bytes(purpose)
-            );
+            // Fixed Bug 6: In a real app, we'd hash the purpose string or use a proper mechanism
+            const purposeHash = purpose ? keccak256(stringToHex(purpose)) : '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-            // For a simple withdrawal without specific donation tracking, use empty arrays
-            // In production, you'd need to track specific donation IDs
-            const donationIds = [];
-            const withdrawalAmounts = [];
-
-            const tx = await createRequestContract({
+            const { request } = await publicClient.simulateContract({
+                account: address,
+                address: contractAddress,
+                abi: DonationPlatformABI,
+                functionName: 'createWithdrawalRequest',
                 args: [
-                    token.address,           // token address
-                    amountWei,              // amount in Wei
-                    purposeHash,            // hash of purpose
-                    purpose,                // raw purpose string for verification
-                    donationIds,            // donation IDs (empty for simple withdrawals)
-                    withdrawalAmounts       // withdrawal amounts per donation (empty for simple withdrawals)
+                    0n, // Fixed Bug 6: dummy ID overwritten by contract
+                    token.address,
+                    amountWei,
+                    purposeHash,
+                    donationIds,
+                    withdrawalAmounts
                 ]
             });
-            
-            await tx.wait();
-            await fetchRequests(); // Refresh the requests list
-            toast.success('Withdrawal request created! Pending approval.');
-            return tx;
+
+            const hash = await walletClient.writeContract(request);
+
+            toast.success('Withdrawal request tx submitted! Pending confirmation.');
+            await publicClient.waitForTransactionReceipt({ hash });
+            toast.success('Withdrawal request created!');
+            return hash;
         } catch (error) {
             console.error('Error creating request:', error);
             toast.error(error.message || 'Failed to create request');
@@ -170,20 +163,27 @@ export function useNGODashboard() {
     };
 
     // 6. Execute Withdrawal
-    const { writeAsync: executeWithdrawalContract } = useContractWrite({
-        address: contractAddress,
-        abi: DonationPlatformABI,
-        functionName: 'executeWithdrawal',
-    });
-
     const executeRequest = async (requestId) => {
+        if (!walletClient || !contractAddress) {
+            throw new Error('Wallet not connected or contract address missing');
+        }
+
         setLoading(true);
         try {
-            const tx = await executeWithdrawalContract({
-                args: [requestId]
+            const { request } = await publicClient.simulateContract({
+                account: address,
+                address: contractAddress,
+                abi: DonationPlatformABI,
+                functionName: 'executeWithdrawal',
+                args: [BigInt(requestId)]
             });
+
+            const hash = await walletClient.writeContract(request);
+
+            toast.success('Withdrawal tx submitted! Pending confirmation.');
+            await publicClient.waitForTransactionReceipt({ hash });
             toast.success('Withdrawal executed successfully! 🎉');
-            return tx;
+            return hash;
         } catch (error) {
             console.error('Error executing withdrawal:', error);
             toast.error(error.message || 'Failed to execute withdrawal');
