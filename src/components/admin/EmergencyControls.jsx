@@ -8,7 +8,6 @@ import {
   FaUnlock,
   FaBan,
   FaCheckCircle,
-  FaCheckCircle,
   FaTimesCircle,
   FaHistory
 } from 'react-icons/fa'
@@ -428,7 +427,7 @@ const EmergencyModal = ({
               onClick={onConfirm}
               disabled={confirmationText !== 'CONFIRM'}
               className={`btn flex-1 ${getButtonVariant() === 'danger' ? 'btn-danger' :
-                  getButtonVariant() === 'secondary' ? 'btn-secondary' : 'btn-primary'
+                getButtonVariant() === 'secondary' ? 'btn-secondary' : 'btn-primary'
                 }`}
             >
               {confirmText}
