@@ -155,6 +155,6 @@ export const TRANSPARENCY_INFO = {
     features: [
         { icon: <Image src="/assets/immutable.png" alt="MATIC" width={40} height={40} />, title: 'Immutable Records', text: 'All donations permanently recorded' },
         { icon: <Image src="/assets/real-time.png" alt="USDT" width={40} height={40} />, title: 'Real-time Tracking', text: 'View transactions as they happen' },
-        { icon: <Image src="/assets/fee.png" alt="USDC" width={40} height={40} />, title: 'Fee Transparency', text: `${PLATFORM_FEE_PERCENT}% fee supports GiveHope` },
+        { icon: <Image src="/assets/fee-transparency.png" alt="USDC" width={40} height={40} />, title: 'Fee Transparency', text: `${PLATFORM_FEE_PERCENT}% fee supports GiveHope` },
     ],
 }
