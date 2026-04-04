@@ -1,5 +1,5 @@
 'use client'
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaHeart } from 'react-icons/fa';
 import { FaWater, FaBookOpen, FaStethoscope } from 'react-icons/fa';
@@ -13,11 +13,27 @@ const MOCK_DONATIONS = [
 ];
 
 const DonationTicker = () => {
+    const [donations, setDonations] = useState(MOCK_DONATIONS);
+
+    useEffect(() => {
+        const recent = JSON.parse(localStorage.getItem('recentDonations') || '[]');
+        if (recent.length > 0) {
+            const withIcons = recent.map(d => ({
+                ...d,
+                icon: d.iconType === 'water' ? <FaWater className="text-blue-500" /> :
+                      d.iconType === 'book' ? <FaBookOpen className="text-purple-500" /> :
+                      d.iconType === 'stethoscope' ? <FaStethoscope className="text-red-500" /> :
+                      <FaHeart className="text-pink-500" />
+            }));
+            setDonations([...withIcons, ...MOCK_DONATIONS]);
+        }
+    }, []);
+
     // We duplicate the array to create a seamless infinite loop
-    const duplicatedDonations = [...MOCK_DONATIONS, ...MOCK_DONATIONS, ...MOCK_DONATIONS];
+    const duplicatedDonations = [...donations, ...donations, ...donations];
 
     return (
-        <div className="w-full bg-slate-900 border-b border-slate-800 py-2 overflow-hidden flex items-center relative z-50">
+        <div className="w-full bg-slate-900 border-b border-slate-800 py-2 overflow-hidden flex items-center relative z-40">
             {/* Left fade gradient */}
             <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
 

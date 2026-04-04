@@ -158,6 +158,19 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
             setTxStatus('success')
             setTxStep('success')
             toast.success('Donation successful! 🎉', { id: 'donate' })
+            // Add to ticker
+            const iconType = selectedNGO ? 'heart' : 'heart'; // customize based on NGO
+            const newDonation = {
+                id: Date.now(),
+                user: address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Anonymous',
+                amount: `${amount} ${selectedToken.symbol}`,
+                cause: selectedNGO ? selectedNGO.name : 'General Pool',
+                iconType
+            };
+            const recent = JSON.parse(localStorage.getItem('recentDonations') || '[]');
+            recent.unshift(newDonation);
+            if (recent.length > 5) recent.splice(5);
+            localStorage.setItem('recentDonations', JSON.stringify(recent));
             setTimeout(() => {
                 // Reset form after 2 seconds
                 setAmount('')
@@ -172,6 +185,19 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
             setTxStatus('success')
             setTxStep('success')
             toast.success('Donation successful! 🎉', { id: 'donate' })
+            // Add to ticker
+            const iconType = selectedNGO ? 'heart' : 'heart'; // customize based on NGO
+            const newDonation = {
+                id: Date.now(),
+                user: address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Anonymous',
+                amount: `${amount} ${selectedToken.symbol}`,
+                cause: selectedNGO ? selectedNGO.name : 'General Pool',
+                iconType
+            };
+            const recent = JSON.parse(localStorage.getItem('recentDonations') || '[]');
+            recent.unshift(newDonation);
+            if (recent.length > 5) recent.splice(5);
+            localStorage.setItem('recentDonations', JSON.stringify(recent));
             setTimeout(() => {
                 // Reset form after 2 seconds
                 setAmount('')
@@ -186,6 +212,19 @@ export default function DonateForm({ ngos = [], platformFeePercent = 2, loading 
             setTxStatus('success')
             setTxStep('success')
             toast.success('Donation successful! 🎉', { id: 'donate' })
+            // Add to ticker
+            const iconType = selectedNGO ? 'heart' : 'heart'; // customize based on NGO
+            const newDonation = {
+                id: Date.now(),
+                user: address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Anonymous',
+                amount: `${amount} ${selectedToken.symbol}`,
+                cause: selectedNGO ? selectedNGO.name : 'General Pool',
+                iconType
+            };
+            const recent = JSON.parse(localStorage.getItem('recentDonations') || '[]');
+            recent.unshift(newDonation);
+            if (recent.length > 5) recent.splice(5);
+            localStorage.setItem('recentDonations', JSON.stringify(recent));
             setTimeout(() => {
                 // Reset form after 2 seconds
                 setAmount('')
